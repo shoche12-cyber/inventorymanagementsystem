@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品分類 | 在庫管理システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f4f5f7;--sidebar-bg:#1a1f2e;--sidebar-active:#2d3550;--sidebar-text:#a0a8c0;--accent:#3b82f6;--accent-hover:#2563eb;--card-bg:#fff;--text-primary:#1e2436;--text-secondary:#6b7280;--border:#e5e7eb;--sidebar-width:220px;--btn-purple:#a855f7;--btn-purple-h:#9333ea;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text-primary);display:flex;min-height:100vh;}
+  .sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+  .sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .sidebar-logo span{font-size:13px;font-weight:700;letter-spacing:0.08em;color:#fff;text-transform:uppercase;}
+  .sidebar-logo small{display:block;font-size:10px;color:var(--sidebar-text);margin-top:2px;}
+  .sidebar-nav{padding:16px 0;flex:1;}
+  .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#4a5270;padding:8px 20px 4px;font-weight:500;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--sidebar-text);text-decoration:none;font-size:13.5px;transition:all .18s;cursor:pointer;border-left:3px solid transparent;}
+  .nav-item:hover{background:var(--sidebar-active);color:#fff;}
+  .nav-item.active{background:var(--sidebar-active);color:#fff;border-left-color:var(--accent);font-weight:500;}
+  .nav-icon{width:18px;height:18px;opacity:.7;flex-shrink:0;}
+  .nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1;}
+  .main{margin-left:var(--sidebar-width);flex:1;display:flex;flex-direction:column;}
+  .topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;}
+  .topbar-title{font-size:15px;font-weight:600;}
+  .content{padding:24px 32px;flex:1;}
+  .card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;}
+  .card-title{font-size:13px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;}
+  .btn-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+  .btn{height:38px;padding:0 20px;border:none;border-radius:7px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent-hover);}
+  .btn-purple{background:var(--btn-purple);color:#fff;}
+  .btn-purple:hover{background:var(--btn-purple-h);}
+  .btn-secondary{background:#f3f4f6;color:var(--text-primary);}
+  .btn-secondary:hover{background:#e5e7eb;}
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead tr{background:#f8f9fb;}
+  th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap;}
+  td{padding:11px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle;}
+  tr:hover td{background:#f8fbff;}
+  .code-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);}
+  .big-cls-row td{font-weight:600;background:#f8f9fb;}
+  .sub-cls-row td:first-child{padding-left:32px;}
+  .empty-state{text-align:center;padding:48px;color:var(--text-secondary);font-size:13px;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;}
+  .badge-big{background:#eff6ff;color:var(--accent);}
+  .badge-sub{background:#faf5ff;color:#a855f7;}
+
+  /* モーダル */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;display:none;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:12px;padding:28px;width:400px;max-width:90vw;box-shadow:0 12px 48px rgba(0,0,0,.18);}
+  .modal h3{font-size:16px;font-weight:700;margin-bottom:18px;}
+  .form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+  .form-group label{font-size:12px;font-weight:500;color:var(--text-secondary);}
+  .form-group input,.form-group select{height:38px;border:1px solid var(--border);border-radius:7px;padding:0 12px;font-size:13px;font-family:inherit;background:#fafafa;outline:none;transition:border-color .15s;}
+  .form-group input:focus,.form-group select:focus{border-color:var(--accent);background:#fff;}
+  .modal-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span>在庫管理</span>
+    <small>Inventory Management System</small>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">メニュー</div>
+    <a class="nav-item" href="index.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>トップ
+    </a>
+    <a class="nav-item" href="inventory.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>在庫
+    </a>
+    <a class="nav-item" href="product.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>商品
+    </a>
+    <a class="nav-item active" href="classification.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>商品分類
+    </a>
+    <a class="nav-item" href="enployee.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>担当者
+    </a>
+    <a class="nav-item" href="site.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>事業所
+    </a>
+  </nav>
+</aside>
+
+<main class="main">
+  <header class="topbar"><div class="topbar-title">商品分類</div></header>
+  <div class="content">
+    <div class="card">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="openBigModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          大分類追加
+        </button>
+        <button class="btn btn-purple" onclick="openSubModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          小分類追加
+        </button>
+      </div>
+      <div class="card-title">商品分類一覧</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>大分類コード</th>
+              <th>大分類名</th>
+              <th>小分類コード</th>
+              <th>小分類名</th>
+              <th>帳票表示分類名</th>
+            </tr>
+          </thead>
+          <tbody id="cls-body">
+            <tr><td colspan="5" class="empty-state">登録されている分類がありません</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 大分類追加モーダル -->
+<div class="modal-overlay" id="big-modal">
+  <div class="modal">
+    <h3>大分類追加</h3>
+    <div class="form-group">
+      <label>大分類コード</label>
+      <input type="text" id="b-code" placeholder="コードを入力" />
+    </div>
+    <div class="form-group">
+      <label>大分類名</label>
+      <input type="text" id="b-name" placeholder="名称を入力" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal('big-modal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="addBig()">登録</button>
+    </div>
+  </div>
+</div>
+
+<!-- 小分類追加モーダル -->
+<div class="modal-overlay" id="sub-modal">
+  <div class="modal">
+    <h3>小分類追加</h3>
+    <div class="form-group">
+      <label>大分類</label>
+      <select id="sub-big-sel">
+        <option value="">大分類を選択</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>小分類コード</label>
+      <input type="text" id="sub-code" placeholder="コードを入力" />
+    </div>
+    <div class="form-group">
+      <label>小分類名</label>
+      <input type="text" id="sub-name" placeholder="名称を入力" />
+    </div>
+    <div class="form-group">
+      <label>帳票表示分類名</label>
+      <input type="text" id="sub-report" placeholder="帳票に表示する名称" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal('sub-modal')">キャンセル</button>
+      <button class="btn btn-purple" onclick="addSub()">登録</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY = 'ims_classifications';
+const load = () => JSON.parse(localStorage.getItem(KEY)||'[]');
+const save = v => localStorage.setItem(KEY, JSON.stringify(v));
+
+function renderTable() {
+  const data = load();
+  const tbody = document.getElementById('cls-body');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">登録されている分類がありません</td></tr>'; return; }
+  let html = '';
+  data.forEach(big => {
+    if (!big.subs || !big.subs.length) {
+      html += `<tr class="big-cls-row">
+        <td class="code-cell">${big.code}</td>
+        <td><span class="badge badge-big">${big.name}</span></td>
+        <td>—</td><td>—</td><td>—</td>
+      </tr>`;
+    } else {
+      big.subs.forEach((sub, i) => {
+        html += `<tr ${i===0?'class="big-cls-row"':''}>
+          <td class="code-cell">${i===0?big.code:''}</td>
+          <td>${i===0?`<span class="badge badge-big">${big.name}</span>`:''}</td>
+          <td class="code-cell sub-indent" style="padding-left:28px;">${sub.code}</td>
+          <td><span class="badge badge-sub">${sub.name}</span></td>
+          <td>${sub.reportName||'—'}</td>
+        </tr>`;
+      });
+    }
+  });
+  tbody.innerHTML = html;
+}
+
+function openBigModal() {
+  document.getElementById('b-code').value = '';
+  document.getElementById('b-name').value = '';
+  document.getElementById('big-modal').classList.add('open');
+}
+function openSubModal() {
+  const sel = document.getElementById('sub-big-sel');
+  sel.innerHTML = '<option value="">大分類を選択</option>';
+  load().forEach(c => sel.innerHTML += `<option value="${c.code}">${c.code} - ${c.name}</option>`);
+  ['sub-code','sub-name','sub-report'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('sub-modal').classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function addBig() {
+  const code = document.getElementById('b-code').value.trim();
+  const name = document.getElementById('b-name').value.trim();
+  if (!code||!name) { alert('大分類コードと大分類名を入力してください。'); return; }
+  const data = load();
+  if (data.find(c=>c.code===code)) { alert('そのコードは既に登録されています。'); return; }
+  data.push({ code, name, subs: [] });
+  save(data);
+  closeModal('big-modal');
+  renderTable();
+}
+
+function addSub() {
+  const bigCode   = document.getElementById('sub-big-sel').value;
+  const subCode   = document.getElementById('sub-code').value.trim();
+  const subName   = document.getElementById('sub-name').value.trim();
+  const repName   = document.getElementById('sub-report').value.trim();
+  if (!bigCode||!subCode||!subName||!repName) { alert('すべての項目を入力してください。'); return; }
+  const data = load();
+  const big  = data.find(c=>c.code===bigCode);
+  if (!big) { alert('大分類が見つかりません。'); return; }
+  if (!big.subs) big.subs = [];
+  if (big.subs.find(s=>s.code===subCode)) { alert('その小分類コードは既に登録されています。'); return; }
+  big.subs.push({ code: subCode, name: subName, reportName: repName });
+  save(data);
+  closeModal('sub-modal');
+  renderTable();
+}
+
+renderTable();
+</script>
+</body>
+</html>
