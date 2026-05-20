@@ -3,63 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>在庫 | 在庫管理システム</title>
+<title>商品 | 在庫管理システム</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f4f5f7; --sidebar-bg: #1a1f2e; --sidebar-active: #2d3550;
-    --sidebar-text: #a0a8c0; --accent: #3b82f6; --accent-hover: #2563eb;
-    --card-bg: #ffffff; --text-primary: #1e2436; --text-secondary: #6b7280;
-    --border: #e5e7eb; --sidebar-width: 220px;
+    --bg:#f4f5f7; --sidebar-bg:#1a1f2e; --sidebar-active:#2d3550; --sidebar-text:#a0a8c0;
+    --accent:#3b82f6; --accent-hover:#2563eb; --card-bg:#fff; --text-primary:#1e2436;
+    --text-secondary:#6b7280; --border:#e5e7eb; --sidebar-width:220px;
+    --btn-green:#22c55e; --btn-green-h:#16a34a;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text-primary); display: flex; min-height: 100vh; }
-  .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-  .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); }
-  .sidebar-logo span { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; color: #fff; text-transform: uppercase; }
-  .sidebar-logo small { display: block; font-size: 10px; color: var(--sidebar-text); margin-top: 2px; }
-  .sidebar-nav { padding: 16px 0; flex: 1; }
-  .nav-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #4a5270; padding: 8px 20px 4px; font-weight: 500; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--sidebar-text); text-decoration: none; font-size: 13.5px; font-weight: 400; transition: all 0.18s ease; cursor: pointer; border-left: 3px solid transparent; }
-  .nav-item:hover { background: var(--sidebar-active); color: #fff; }
-  .nav-item.active { background: var(--sidebar-active); color: #fff; border-left-color: var(--accent); font-weight: 500; }
-  .nav-icon { width: 18px; height: 18px; opacity: 0.7; flex-shrink: 0; }
-  .nav-item.active .nav-icon, .nav-item:hover .nav-icon { opacity: 1; }
-  .main { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; }
-  .topbar { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; }
-  .topbar-title { font-size: 15px; font-weight: 600; }
-  .content { padding: 24px 32px; flex: 1; }
-  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 20px; }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; }
-  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px 20px; }
-  .form-group { display: flex; flex-direction: column; gap: 5px; }
-  .form-group label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
-  .form-group input { height: 38px; border: 1px solid var(--border); border-radius: 7px; padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary); background: #fafafa; outline: none; transition: border-color 0.15s; }
-  .form-group input:focus { border-color: var(--accent); background: #fff; }
-  .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-  .btn { height: 38px; padding: 0 20px; border: none; border-radius: 7px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-hover); }
-  .btn-reset { background: #f3f4f6; color: var(--text-secondary); }
-  .btn-reset:hover { background: #e5e7eb; }
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead tr { background: #f8f9fb; }
-  th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  td { padding: 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
-  tr:hover td { background: #f8fbff; }
-  .code-cell { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent); }
-  .img-thumb { width: 44px; height: 44px; object-fit: cover; border-radius: 7px; border: 1px solid var(--border); }
-  .no-img { width: 44px; height: 44px; border-radius: 7px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #aaa; }
-  .empty-state { text-align: center; padding: 56px; color: var(--text-secondary); font-size: 13px; }
-  .stock-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600; }
-  .stock-positive { background: #dcfce7; color: #16a34a; }
-  .stock-zero     { background: #fee2e2; color: #dc2626; }
-  .stock-low      { background: #fff7ed; color: #ea580c; }
-  .summary-strip { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-  .summary-chip { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 140px; }
-  .summary-chip .s-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
-  .summary-chip .s-value { font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--text-primary); }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text-primary);display:flex;min-height:100vh;}
+  .sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+  .sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .sidebar-logo span{font-size:13px;font-weight:700;letter-spacing:0.08em;color:#fff;text-transform:uppercase;}
+  .sidebar-logo small{display:block;font-size:10px;color:var(--sidebar-text);margin-top:2px;}
+  .sidebar-nav{padding:16px 0;flex:1;}
+  .nav-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#4a5270;padding:8px 20px 4px;font-weight:500;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--sidebar-text);text-decoration:none;font-size:13.5px;transition:all .18s ease;cursor:pointer;border-left:3px solid transparent;}
+  .nav-item:hover{background:var(--sidebar-active);color:#fff;}
+  .nav-item.active{background:var(--sidebar-active);color:#fff;border-left-color:var(--accent);font-weight:500;}
+  .nav-icon{width:18px;height:18px;opacity:.7;flex-shrink:0;}
+  .nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1;}
+  .main{margin-left:var(--sidebar-width);flex:1;display:flex;flex-direction:column;}
+  .topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;}
+  .topbar-title{font-size:15px;font-weight:600;}
+  .content{padding:24px 32px;flex:1;}
+  .card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;}
+  .card-title{font-size:13px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px 20px;}
+  .form-group{display:flex;flex-direction:column;gap:5px;}
+  .form-group label{font-size:12px;font-weight:500;color:var(--text-secondary);}
+  .form-group input,.form-group select{height:38px;border:1px solid var(--border);border-radius:7px;padding:0 12px;font-size:13px;font-family:inherit;color:var(--text-primary);background:#fafafa;outline:none;transition:border-color .15s;}
+  .form-group input:focus,.form-group select:focus{border-color:var(--accent);background:#fff;}
+  .btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .btn{height:38px;padding:0 20px;border:none;border-radius:7px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent-hover);}
+  .btn-success{background:var(--btn-green);color:#fff;}
+  .btn-success:hover{background:var(--btn-green-h);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead tr{background:#f8f9fb;}
+  th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap;}
+  td{padding:11px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle;}
+  tr:hover td{background:#f8fbff;}
+  .code-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);}
+  .img-thumb{width:44px;height:44px;object-fit:cover;border-radius:7px;border:1px solid var(--border);}
+  .no-img{width:44px;height:44px;border-radius:7px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#aaa;}
+  .empty-state{text-align:center;padding:48px;color:var(--text-secondary);font-size:13px;}
+
+  /* 画像アップロード */
+  .img-upload-label{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border:1.5px dashed var(--border);border-radius:7px;cursor:pointer;font-size:12px;color:var(--text-secondary);transition:all .15s;background:#fafafa;}
+  .img-upload-label:hover{border-color:var(--accent);color:var(--accent);}
+  #img-preview{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:none;margin-top:6px;}
 
   /* ═══════════════════════════════
      スマートフォン対応
@@ -178,7 +176,7 @@
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       トップ
     </a>
-    <a class="nav-item active" href="inventory.html">
+    <a class="nav-item" href="inventory.html">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4M9 17V9m0 8h6V9m0 8V9M9 9h6"/></svg>
       在庫
     </a>
@@ -190,7 +188,7 @@
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       登録
     </a>
-    <a class="nav-item" href="product.html">
+    <a class="nav-item active" href="product.html">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
       商品
     </a>
@@ -210,30 +208,43 @@
 </aside>
 
 <main class="main">
-  <header class="topbar">
-    <div class="topbar-title">在庫</div>
-  </header>
-
+  <header class="topbar"><div class="topbar-title">商品</div></header>
   <div class="content">
 
+    <!-- 検索 -->
     <div class="card">
-      <div class="card-title">検索条件</div>
+      <div class="card-title">検索・登録</div>
       <div class="form-grid">
         <div class="form-group">
           <label>商品名</label>
-          <input type="text" id="s-name" placeholder="商品名を入力" />
+          <input type="text" id="s-name" placeholder="入力" />
         </div>
         <div class="form-group">
           <label>商品コード</label>
-          <input type="text" id="s-code" placeholder="商品コードを入力" />
+          <input type="text" id="s-code" placeholder="コードを入力" />
         </div>
         <div class="form-group">
           <label>JANコード</label>
-          <input type="text" id="s-jan" placeholder="JANコードを入力" />
+          <input type="text" id="s-jan" placeholder="コードを入力" />
         </div>
         <div class="form-group">
-          <label>事業所コード</label>
-          <input type="text" id="s-site" placeholder="事業所コードを入力" />
+          <label>商品分類</label>
+          <select id="s-cls">
+            <option value="">選択してください</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>メーカー</label>
+          <input type="text" id="s-maker" placeholder="入力" />
+        </div>
+        <div class="form-group">
+          <label>商品画像</label>
+          <label class="img-upload-label" for="s-img">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            画像を選択
+          </label>
+          <input type="file" id="s-img" accept="image/*" style="display:none" onchange="previewImg(this)" />
+          <img id="img-preview" alt="プレビュー" />
         </div>
       </div>
       <div class="btn-row">
@@ -241,50 +252,30 @@
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           検索
         </button>
-        <button class="btn btn-reset" onclick="resetSearch()">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.49"/></svg>
-          リセット
+        <button class="btn btn-success" id="add-btn" onclick="addProduct()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          追加
         </button>
       </div>
     </div>
 
-    <!-- サマリー -->
-    <div class="summary-strip" id="summary-strip" style="display:none;">
-      <div class="summary-chip">
-        <div class="s-label">検索結果</div>
-        <div class="s-value" id="sum-count">0</div>
-      </div>
-      <div class="summary-chip">
-        <div class="s-label">総在庫数</div>
-        <div class="s-value" id="sum-total">0</div>
-      </div>
-      <div class="summary-chip">
-        <div class="s-label">在庫あり</div>
-        <div class="s-value" id="sum-instock" style="color:#16a34a;">0</div>
-      </div>
-      <div class="summary-chip">
-        <div class="s-label">在庫なし</div>
-        <div class="s-value" id="sum-zero" style="color:#dc2626;">0</div>
-      </div>
-    </div>
-
+    <!-- 結果 -->
     <div class="card">
-      <div class="card-title">在庫一覧 <span id="result-count" style="font-size:11px;color:#aaa;margin-left:8px;"></span></div>
+      <div class="card-title">商品一覧 <span id="result-count" style="font-size:11px;color:#aaa;margin-left:8px;"></span></div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>商品コード</th>
               <th>JANコード</th>
+              <th>メーカー</th>
               <th>商品名</th>
               <th>商品画像</th>
               <th>分類</th>
-              <th>事業所</th>
-              <th>在庫数</th>
             </tr>
           </thead>
           <tbody id="result-body">
-            <tr><td colspan="7" class="empty-state">検索条件を入力して「検索」をクリックしてください</td></tr>
+            <tr><td colspan="6" class="empty-state">登録されている商品がありません</td></tr>
           </tbody>
         </table>
       </div>
@@ -294,22 +285,25 @@
 
 <script>
 
-// ══ ログインガード ══════════════════════════════════════
+// ══ ログインガード（毎回ログイン方式） ══════════════════════
 (function() {
-  var sess = sessionStorage.getItem('ims_session');
-  if (!sess) {
-    // 現在のページをリダイレクト先として保存
-    sessionStorage.setItem('ims_redirect', location.pathname.split('/').pop() || 'index.html');
+  var raw = localStorage.getItem('ims_token');
+  if (!raw) {
+    // 未ログイン：リダイレクト先を保存してlogin.htmlへ
+    var page = location.pathname.split('/').pop() || 'index.html';
+    localStorage.setItem('ims_redirect', page);
     location.replace('login.html');
     return;
   }
   try {
-    var s = JSON.parse(sess);
+    var s = JSON.parse(raw);
     if (!s || !s.empCode) throw new Error();
+    // トークンを即消費（再読み込みで再ログインが必要になる）
+    localStorage.removeItem('ims_token');
     // グローバルに担当者情報を公開
     window.IMS_SESSION = s;
   } catch(e) {
-    sessionStorage.removeItem('ims_session');
+    localStorage.removeItem('ims_token');
     location.replace('login.html');
   }
 })();
@@ -340,148 +334,105 @@
 
 function imsLogout() {
   if (!confirm('ログアウトしますか？')) return;
-  sessionStorage.removeItem('ims_session');
+  localStorage.removeItem('ims_token');
   location.replace('login.html');
 }
-const KEYS = { inv: 'ims_inventory', prod: 'ims_products', site: 'ims_sites', cls: 'ims_classifications' };
-const load = k => JSON.parse(localStorage.getItem(k) || '[]');
+const KEYS = { prod:'ims_products', cls:'ims_classifications' };
+const load = k => JSON.parse(localStorage.getItem(k)||'[]');
+const save = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
-// 操作履歴から商品×事業所ごとの在庫数を計算
-// 入庫(01)・返却(04) → 加算  /  出庫(02)・持ち出し(03) → 減算
-function calcStockMap() {
-  const inv = load(KEYS.inv);
-  const map = {};
-  inv.forEach(r => {
-    const key = `${r.productCode}|${r.siteCode}`;
-    if (!map[key]) map[key] = 0;
-    const qty = parseInt(r.qty) || 0;
-    if (r.opCode === '01' || r.opCode === '04') map[key] += qty;
-    else if (r.opCode === '02' || r.opCode === '03') map[key] -= qty;
+let imgDataUrl = '';
+
+function previewImg(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    imgDataUrl = e.target.result;
+    const preview = document.getElementById('img-preview');
+    preview.src = imgDataUrl;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadClsOptions() {
+  const sel = document.getElementById('s-cls');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">選択してください</option>';
+  const clsData = load(KEYS.cls);
+  clsData.forEach(c => {
+    if (c.subs) c.subs.forEach(s => {
+      sel.innerHTML += `<option value="${s.code}">${c.name} > ${s.name}</option>`;
+    });
   });
-  return map;
+  sel.value = current;
 }
 
 function getClassName(clsCode) {
-  for (const c of load(KEYS.cls)) {
+  const clsData = load(KEYS.cls);
+  for (const c of clsData) {
     const sub = c.subs && c.subs.find(s => s.code === clsCode);
     if (sub) return `${c.name} > ${sub.name}`;
   }
   return clsCode || '—';
 }
 
-function stockBadge(qty) {
-  if (qty > 10) return `<span class="stock-badge stock-positive">${qty}</span>`;
-  if (qty > 0)  return `<span class="stock-badge stock-low">${qty}</span>`;
-  return `<span class="stock-badge stock-zero">${qty}</span>`;
+function renderTable(data) {
+  const tbody = document.getElementById('result-body');
+  document.getElementById('result-count').textContent = data.length ? `${data.length} 件` : '';
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">該当するデータがありません</td></tr>'; return; }
+  tbody.innerHTML = data.map(p => `<tr>
+    <td class="code-cell">${p.code}</td>
+    <td class="code-cell">${p.jan||'—'}</td>
+    <td>${p.maker||'—'}</td>
+    <td>${p.name}</td>
+    <td>${p.image ? `<img class="img-thumb" src="${p.image}" alt="${p.name}">` : '<div class="no-img">NO IMG</div>'}</td>
+    <td>${getClassName(p.classification)}</td>
+  </tr>`).join('');
 }
 
 function doSearch() {
-  const nameVal = document.getElementById('s-name').value.trim();
-  const codeVal = document.getElementById('s-code').value.trim();
-  const janVal  = document.getElementById('s-jan').value.trim();
-  const siteVal = document.getElementById('s-site').value.trim();
+  const name  = document.getElementById('s-name').value.trim();
+  const code  = document.getElementById('s-code').value.trim();
+  const jan   = document.getElementById('s-jan').value.trim();
+  const cls   = document.getElementById('s-cls').value;
+  const maker = document.getElementById('s-maker').value.trim();
+  let data = load(KEYS.prod);
+  if (name)  data = data.filter(p => p.name.includes(name));
+  if (code)  data = data.filter(p => p.code.includes(code));
+  if (jan)   data = data.filter(p => (p.jan||'').includes(jan));
+  if (cls)   data = data.filter(p => p.classification === cls);
+  if (maker) data = data.filter(p => (p.maker||'').includes(maker));
+  renderTable(data);
+}
 
-  const products  = load(KEYS.prod);
-  const sites     = load(KEYS.site);
-  const inv       = load(KEYS.inv);
-  const stockMap  = calcStockMap();
-
-  // 商品を絞り込み（単独でも複数でも対応）
-  let filteredProds = products;
-  if (nameVal) filteredProds = filteredProds.filter(p => p.name && p.name.includes(nameVal));
-  if (codeVal) filteredProds = filteredProds.filter(p => p.code && p.code.includes(codeVal));
-  if (janVal)  filteredProds = filteredProds.filter(p => p.jan  && p.jan.includes(janVal));
-
-  // 事業所を絞り込み
-  let filteredSites = siteVal
-    ? sites.filter(s => s.code && s.code.includes(siteVal))
-    : sites;
-
-  // 在庫履歴に登場した事業所コードも補完
-  const invSiteCodes = [...new Set(inv.map(r => r.siteCode))];
-  const siteMap = {};
-  sites.forEach(s => siteMap[s.code] = s);
-
-  // 表示する (商品 × 事業所) の組み合わせを生成
-  const rows = [];
-
-  if (siteVal) {
-    // 事業所コード指定あり
-    filteredSites.forEach(site => {
-      filteredProds.forEach(prod => {
-        const key = `${prod.code}|${site.code}`;
-        rows.push({ prod, site, qty: stockMap[key] || 0 });
-      });
-    });
-  } else {
-    // 事業所コード指定なし：履歴に登場した事業所×絞り込み商品
-    if (invSiteCodes.length > 0) {
-      invSiteCodes.forEach(sc => {
-        const site = siteMap[sc] || { code: sc, name: sc };
-        filteredProds.forEach(prod => {
-          const key = `${prod.code}|${sc}`;
-          // その組み合わせに操作履歴があるものだけ表示
-          if (inv.some(r => r.productCode === prod.code && r.siteCode === sc)) {
-            rows.push({ prod, site, qty: stockMap[key] || 0 });
-          }
-        });
-      });
-    } else {
-      // 操作履歴がない場合は全事業所×全商品
-      filteredSites.forEach(site => {
-        filteredProds.forEach(prod => {
-          const key = `${prod.code}|${site.code}`;
-          rows.push({ prod, site, qty: stockMap[key] || 0 });
-        });
-      });
-    }
+function addProduct() {
+  const name  = document.getElementById('s-name').value.trim();
+  const code  = document.getElementById('s-code').value.trim();
+  const jan   = document.getElementById('s-jan').value.trim();
+  const cls   = document.getElementById('s-cls').value;
+  const maker = document.getElementById('s-maker').value.trim();
+  if (!name || !code || !jan || !cls || !maker) {
+    alert('すべての項目（商品名・商品コード・JANコード・商品分類・メーカー）を入力してください。'); return;
   }
-
-  renderTable(rows);
-  updateSummary(rows);
+  const prods = load(KEYS.prod);
+  if (prods.find(p => p.code === code)) { alert('その商品コードは既に登録されています。'); return; }
+  prods.push({ code, jan, name, maker, classification: cls, image: imgDataUrl });
+  save(KEYS.prod, prods);
+  imgDataUrl = '';
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('img-preview').src = '';
+  document.getElementById('s-img').value = '';
+  ['s-name','s-code','s-jan','s-maker'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('s-cls').value = '';
+  alert('商品を登録しました。');
+  doSearch();
 }
 
-function renderTable(rows) {
-  const tbody = document.getElementById('result-body');
-  document.getElementById('result-count').textContent = rows.length ? `${rows.length} 件` : '';
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">該当する在庫データがありません</td></tr>';
-    return;
-  }
-  tbody.innerHTML = rows.map(({ prod, site, qty }) => {
-    const imgHtml = prod.image
-      ? `<img class="img-thumb" src="${prod.image}" alt="${prod.name}">`
-      : `<div class="no-img">NO IMG</div>`;
-    return `<tr>
-      <td class="code-cell">${prod.code}</td>
-      <td class="code-cell">${prod.jan || '—'}</td>
-      <td style="font-weight:500;">${prod.name}</td>
-      <td>${imgHtml}</td>
-      <td style="font-size:12px;color:var(--text-secondary);">${getClassName(prod.classification)}</td>
-      <td>${site.name || site.code}<span style="font-family:'DM Mono',monospace;font-size:11px;color:#aaa;margin-left:4px;">(${site.code})</span></td>
-      <td>${stockBadge(qty)}</td>
-    </tr>`;
-  }).join('');
-}
-
-function updateSummary(rows) {
-  const strip = document.getElementById('summary-strip');
-  strip.style.display = rows.length ? 'flex' : 'none';
-  document.getElementById('sum-count').textContent   = rows.length;
-  document.getElementById('sum-total').textContent   = rows.reduce((a, r) => a + Math.max(r.qty, 0), 0);
-  document.getElementById('sum-instock').textContent = rows.filter(r => r.qty > 0).length;
-  document.getElementById('sum-zero').textContent    = rows.filter(r => r.qty <= 0).length;
-}
-
-function resetSearch() {
-  ['s-name','s-code','s-jan','s-site'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('result-body').innerHTML =
-    '<tr><td colspan="7" class="empty-state">検索条件を入力して「検索」をクリックしてください</td></tr>';
-  document.getElementById('result-count').textContent = '';
-  document.getElementById('summary-strip').style.display = 'none';
-}
-
-document.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+// 初期化
+loadClsOptions();
+renderTable(load(KEYS.prod));
 </script>
 
 <nav class="bottom-nav">
@@ -490,12 +441,12 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); }
     登録
     <span class="nav-dot"></span>
   </a>
-  <a class="bottom-nav-item active" href="inventory.html">
+  <a class="bottom-nav-item" href="inventory.html">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4M9 17V9m0 8h6V9m0 8V9M9 9h6"/></svg>
     在庫
     <span class="nav-dot"></span>
   </a>
-  <a class="bottom-nav-item" href="product.html">
+  <a class="bottom-nav-item active" href="product.html">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
     商品
     <span class="nav-dot"></span>
