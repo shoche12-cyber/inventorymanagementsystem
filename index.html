@@ -1,613 +1,394 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<script>
-// ══ ログインガード ══
-(function() {
-  var raw = localStorage.getItem('ims_token');
-  if (!raw) {
-    var page = (location.pathname.split('/').pop() || 'index.html');
-    localStorage.setItem('ims_redirect', page);
-    location.replace('login.html');
-    throw new Error('redirect');
-  }
-  try {
-    var s = JSON.parse(raw);
-    if (!s || !s.empCode) throw new Error();
-    localStorage.removeItem('ims_token');
-    window.IMS_SESSION = s;
-  } catch(e) {
-    localStorage.removeItem('ims_token');
-    var page2 = (location.pathname.split('/').pop() || 'index.html');
-    localStorage.setItem('ims_redirect', page2);
-    location.replace('login.html');
-    throw new Error('redirect');
-  }
-})();
-</script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>在庫管理システム</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ログイン | 在庫管理システム</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #f4f5f7;
     --sidebar-bg: #1a1f2e;
-    --sidebar-active: #2d3550;
-    --sidebar-text: #a0a8c0;
-    --sidebar-active-text: #ffffff;
     --accent: #3b82f6;
     --accent-hover: #2563eb;
     --card-bg: #ffffff;
     --text-primary: #1e2436;
     --text-secondary: #6b7280;
     --border: #e5e7eb;
-    --sidebar-width: 220px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     font-family: 'Noto Sans JP', sans-serif;
-    background: var(--bg);
-    color: var(--text-primary);
-    display: flex;
-    min-height: 100vh;
-  }
-
-  /* ── サイドバー ── */
-  .sidebar {
-    width: var(--sidebar-width);
     background: var(--sidebar-bg);
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0; left: 0;
-    height: 100vh;
-    z-index: 100;
-  }
-
-  .sidebar-logo {
-    padding: 24px 20px 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-  }
-
-  .sidebar-logo span {
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: #ffffff;
-    text-transform: uppercase;
-  }
-
-  .sidebar-logo small {
-    display: block;
-    font-size: 10px;
-    color: var(--sidebar-text);
-    margin-top: 2px;
-    letter-spacing: 0.05em;
-  }
-
-  .sidebar-nav {
-    padding: 16px 0;
-    flex: 1;
-  }
-
-  .nav-label {
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #4a5270;
-    padding: 8px 20px 4px;
-    font-weight: 500;
-  }
-
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 20px;
-    color: var(--sidebar-text);
-    text-decoration: none;
-    font-size: 13.5px;
-    font-weight: 400;
-    transition: all 0.18s ease;
-    cursor: pointer;
-    border-left: 3px solid transparent;
-  }
-
-  .nav-item:hover {
-    background: var(--sidebar-active);
-    color: #ffffff;
-  }
-
-  .nav-item.active {
-    background: var(--sidebar-active);
-    color: var(--sidebar-active-text);
-    border-left-color: var(--accent);
-    font-weight: 500;
-  }
-
-  .nav-icon {
-    width: 18px;
-    height: 18px;
-    opacity: 0.7;
-    flex-shrink: 0;
-  }
-
-  .nav-item.active .nav-icon,
-  .nav-item:hover .nav-icon { opacity: 1; }
-
-  /* ── メインコンテンツ ── */
-  .main {
-    margin-left: var(--sidebar-width);
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .topbar {
-    background: var(--card-bg);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .topbar-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 12px;
-    color: var(--text-secondary);
-  }
-
-  .content {
-    padding: 32px;
-    flex: 1;
-  }
-
-  /* ── トップページ固有 ── */
-  .page-header {
-    margin-bottom: 32px;
-  }
-
-  .page-header h1 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-  }
-
-  .page-header p {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-top: 6px;
-  }
-
-  .menu-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 20px;
-  }
-
-  .menu-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px 24px;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
-
-  .menu-card:hover {
-    border-color: var(--accent);
-    box-shadow: 0 4px 20px rgba(59,130,246,0.12);
-    transform: translateY(-2px);
-  }
-
-  .menu-card-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
   }
 
-  .menu-card-icon svg {
-    width: 26px;
-    height: 26px;
+  /* 背景装飾 */
+  body::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+    top: -200px; right: -200px;
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
+    bottom: -100px; left: -100px;
+    pointer-events: none;
   }
 
-  .icon-blue   { background: #eff6ff; color: #3b82f6; }
-  .icon-indigo { background: #eef2ff; color: #6366f1; }
-  .icon-green  { background: #f0fdf4; color: #22c55e; }
-  .icon-purple { background: #faf5ff; color: #a855f7; }
-  .icon-orange { background: #fff7ed; color: #f97316; }
-  .icon-teal   { background: #f0fdfa; color: #14b8a6; }
-
-  .menu-card-info h3 {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-primary);
+  .login-wrap {
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 1;
   }
 
-  .menu-card-info p {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-top: 4px;
-    line-height: 1.5;
-  }
-
-  .summary-bar {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
+  /* ロゴ部分 */
+  .login-header {
+    text-align: center;
     margin-bottom: 32px;
   }
-
-  .stat-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px 20px;
+  .login-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px; height: 56px;
+    background: var(--accent);
+    border-radius: 14px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(59,130,246,0.35);
   }
-
-  .stat-card .label {
-    font-size: 11px;
-    color: var(--text-secondary);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    font-weight: 500;
-  }
-
-  .stat-card .value {
-    font-size: 26px;
+  .login-logo svg { width: 28px; height: 28px; color: #fff; }
+  .login-header h1 {
+    font-size: 20px;
     font-weight: 700;
-    color: var(--text-primary);
+    color: #ffffff;
+    letter-spacing: -0.01em;
+  }
+  .login-header p {
+    font-size: 13px;
+    color: #6b7a9f;
     margin-top: 6px;
-    font-family: 'DM Mono', monospace;
   }
 
-  .stat-card .sub {
+  /* カード */
+  .login-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .input-wrap {
+    position: relative;
+  }
+  .input-wrap svg {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    width: 16px; height: 16px;
+    color: #9ca3af;
+    pointer-events: none;
+  }
+  .input-wrap input {
+    width: 100%;
+    height: 46px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    padding: 0 12px 0 38px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background: #fafafa;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .input-wrap input:focus {
+    border-color: var(--accent);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  }
+  .input-wrap input.error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+  }
+
+  /* パスワード表示トグル */
+  .toggle-pw {
+    position: absolute;
+    right: 12px; top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+  }
+  .toggle-pw:hover { color: var(--text-secondary); }
+
+  /* エラーメッセージ */
+  .error-msg {
+    display: none;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #dc2626;
+    margin-bottom: 16px;
+    align-items: center;
+    gap: 8px;
+  }
+  .error-msg.show { display: flex; }
+
+  /* ログインボタン */
+  .btn-login {
+    width: 100%;
+    height: 48px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+  }
+  .btn-login:hover { background: var(--accent-hover); box-shadow: 0 6px 20px rgba(59,130,246,0.4); transform: translateY(-1px); }
+  .btn-login:active { transform: translateY(0); }
+  .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  /* ローディングスピナー */
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  .btn-login.loading .spinner { display: block; }
+  .btn-login.loading .btn-text { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ヒント */
+  .login-hint {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .login-hint strong { color: var(--text-primary); }
+
+  /* フッター */
+  .login-footer {
+    text-align: center;
+    margin-top: 24px;
     font-size: 11px;
-    color: #22c55e;
-    margin-top: 4px;
+    color: #3d4a6b;
   }
 
-  /* ═══════════════════════════════
-     スマートフォン対応
-  ═══════════════════════════════ */
-  @media (max-width: 768px) {
-    /* サイドバー非表示 */
-    .sidebar { display: none; }
-
-    /* メインを全幅に */
-    .main { margin-left: 0; }
-
-    /* トップバー */
-    .topbar { padding: 0 16px; }
-
-    /* コンテンツ余白調整・下部ナビ分の余白 */
-    .content { padding: 16px; padding-bottom: 88px; }
-
-    /* カードのパディング縮小 */
-    .card { padding: 16px; }
-
-    /* フォームグリッドを1列 */
-    .form-grid { grid-template-columns: 1fr; }
-    .form-row-wide { grid-column: 1; }
-
-    /* テーブルフォントサイズ */
-    table { font-size: 12px; }
-    th, td { padding: 8px 8px; }
-
-    /* メニューグリッド（トップページ） */
-    .menu-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-    .menu-card { padding: 16px 12px; gap: 10px; }
-    .menu-card-icon { width: 40px; height: 40px; }
-    .menu-card-info h3 { font-size: 13px; }
-    .menu-card-info p { font-size: 11px; }
-
-    /* サマリーバー */
-    .summary-bar { grid-template-columns: 1fr 1fr; }
-    .summary-strip { gap: 8px; }
-    .summary-chip { min-width: 0; flex: 1; padding: 8px 12px; }
-  }
-
-  /* ══════════════ 下部タブナビ ══════════════ */
-  .bottom-nav {
-    display: none; /* PCでは非表示 */
-  }
-  @media (max-width: 768px) {
-    .bottom-nav {
-      display: flex;
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      height: 64px;
-      background: #1a1f2e;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      z-index: 200;
-      padding: 0;
-    }
-    .bottom-nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      color: #6b7a9f;
-      text-decoration: none;
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.02em;
-      padding: 8px 4px;
-      transition: color 0.15s;
-      cursor: pointer;
-      border: none;
-      background: none;
-      font-family: inherit;
-    }
-    .bottom-nav-item svg {
-      width: 22px;
-      height: 22px;
-    }
-    .bottom-nav-item.active {
-      color: #60a5fa;
-    }
-    .bottom-nav-item:hover {
-      color: #93c5fd;
-    }
-    .bottom-nav-item .nav-dot {
-      display: none;
-    }
-    .bottom-nav-item.active .nav-dot {
-      display: block;
-      width: 4px; height: 4px;
-      border-radius: 50%;
-      background: #60a5fa;
-      margin-top: -2px;
-    }
-  }
-
-
-  /* 登録タブ：PCでは非表示、スマホのみ表示 */
-  .nav-item.mobile-only { display: none; }
-  @media (max-width: 768px) {
-    .nav-item.mobile-only { display: flex; }
+  @media (max-width: 480px) {
+    .login-card { padding: 24px 20px; }
+    .login-header h1 { font-size: 18px; }
   }
 </style>
 </head>
 <body>
 
-<!-- サイドバー -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <span>在庫管理</span>
-    <small>Inventory Management System</small>
+<div class="login-wrap">
+  <div class="login-header">
+    <div class="login-logo">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4M9 17V9m0 8h6V9m0 8V9M9 9h6"/>
+      </svg>
+    </div>
+    <h1>在庫管理システム</h1>
+    <p>担当者コードとパスワードでログインしてください</p>
   </div>
-  <nav class="sidebar-nav">
-    <div class="nav-label">メニュー</div>
-    <a class="nav-item active" href="index.html">
-      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      トップ
-    </a>
-    <a class="nav-item" href="inventory.html">
-      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4M9 17V9m0 8h6V9m0 8V9M9 9h6"/></svg>
-      在庫
-    </a>
-    <a class="nav-item" href="operation history.html">
-      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-      操作履歴
-    </a>
-    <a class="nav-item mobile-only" href="registration.html">
-      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      登録
-    </a>
-    <a class="nav-item" href="product.html">
-      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-      商品
-    </a>
-    <a class="nav-item" href="classification.html">
-      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-      商品分類
-    </a>
-    <a class="nav-item" href="enployee.html">
-      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      担当者
-    </a>
-    <a class="nav-item" href="site.html">
-      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-      事業所
-    </a>
-  </nav>
-</aside>
 
-<!-- メインコンテンツ -->
-<main class="main">
-  <header class="topbar">
-    <div class="topbar-title">ダッシュボード</div>
-    <div class="topbar-right">
-      <span id="current-date"></span>
-    </div>
-  </header>
+  <div class="login-card">
 
-  <div class="content">
-    <div class="page-header">
-      <h1>在庫管理システム</h1>
-      <p>管理メニューを選択してください</p>
+    <!-- エラーメッセージ -->
+    <div class="error-msg" id="error-msg">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="error-text">担当者コードまたはパスワードが正しくありません</span>
     </div>
 
-    <!-- サマリー -->
-    <div class="summary-bar">
-      <div class="stat-card">
-        <div class="label">登録商品数</div>
-        <div class="value" id="stat-products">—</div>
-        <div class="sub">件</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">担当者数</div>
-        <div class="value" id="stat-employees">—</div>
-        <div class="sub">名</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">事業所数</div>
-        <div class="value" id="stat-sites">—</div>
-        <div class="sub">拠点</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">在庫操作数</div>
-        <div class="value" id="stat-inventory">—</div>
-        <div class="sub">件</div>
+    <!-- 担当者コード -->
+    <div class="form-group">
+      <label>担当者コード</label>
+      <div class="input-wrap">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <input type="text" id="emp-code" placeholder="担当者コードを入力"
+          autocomplete="username" inputmode="text"
+          onkeydown="if(event.key==='Enter')document.getElementById('password').focus()" />
       </div>
     </div>
 
-    <!-- メニューカード -->
-    <div class="menu-grid">
-      <a class="menu-card" href="inventory.html">
-        <div class="menu-card-icon icon-blue">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4M9 17V9m0 8h6V9m0 8V9M9 9h6"/></svg>
-        </div>
-        <div class="menu-card-info">
-          <h3>在庫</h3>
-          <p>商品・事業所ごとの在庫数を確認</p>
-        </div>
-      </a>
-      <a class="menu-card" href="operation history.html">
-        <div class="menu-card-icon icon-indigo">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        </div>
-        <div class="menu-card-info">
-          <h3>操作履歴</h3>
-          <p>入出庫・持ち出し・返却の履歴検索と登録</p>
-        </div>
-      </a>
-      <a class="menu-card" href="product.html">
-        <div class="menu-card-icon icon-green">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-        </div>
-        <div class="menu-card-info">
-          <h3>商品</h3>
-          <p>商品情報の検索・新規登録</p>
-        </div>
-      </a>
-      <a class="menu-card" href="classification.html">
-        <div class="menu-card-icon icon-purple">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-        </div>
-        <div class="menu-card-info">
-          <h3>商品分類</h3>
-          <p>大分類・小分類の管理</p>
-        </div>
-      </a>
-      <a class="menu-card" href="enployee.html">
-        <div class="menu-card-icon icon-orange">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
-        <div class="menu-card-info">
-          <h3>担当者</h3>
-          <p>担当者の検索・新規登録</p>
-        </div>
-      </a>
-      <a class="menu-card" href="site.html">
-        <div class="menu-card-icon icon-teal">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-        </div>
-        <div class="menu-card-info">
-          <h3>事業所</h3>
-          <p>事業所の検索・新規登録</p>
-        </div>
-      </a>
+    <!-- パスワード -->
+    <div class="form-group">
+      <label>パスワード</label>
+      <div class="input-wrap">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <input type="password" id="password" placeholder="パスワードを入力"
+          autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')doLogin()" />
+        <button class="toggle-pw" type="button" onclick="togglePw()" id="pw-toggle" title="パスワードを表示">
+          <svg id="pw-eye" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg id="pw-eye-off" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
     </div>
+
+    <button class="btn-login" id="login-btn" onclick="doLogin()">
+      <div class="spinner"></div>
+      <span class="btn-text">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        ログイン
+      </span>
+    </button>
+
+
   </div>
-</main>
+
+  <div class="login-footer">Inventory Management System &copy; 2025</div>
+</div>
 
 <script>
+const KEYS = { emp: 'ims_employees', accounts: 'ims_accounts', token: 'ims_token', redirect: 'ims_redirect' };
+const load = k => JSON.parse(localStorage.getItem(k) || '[]');
 
+// 毎回ログイン方式 - ログイン済みチェックなし
 
-// ── トップバーにログインユーザー情報を表示 ──
-(function() {
-  function injectUserInfo() {
-    var topbar = document.querySelector('.topbar');
-    if (!topbar || !window.IMS_SESSION) return;
-    if (topbar.querySelector('.topbar-user')) return;
-    var div = document.createElement('div');
-    div.className = 'topbar-user';
-    div.style.cssText = 'display:flex;align-items:center;gap:10px;margin-left:auto;';
-    div.innerHTML =
-      '<span style="font-size:12px;color:var(--text-secondary);">' +
-        '<span style="font-weight:600;color:var(--text-primary);">' + (window.IMS_SESSION.empName || window.IMS_SESSION.empCode) + '</span>' +
-        '<span style="margin-left:6px;font-family:DM Mono,monospace;font-size:11px;color:#aaa;">(' + window.IMS_SESSION.empCode + ')</span>' +
-      '</span>' +
-      '<button onclick="imsLogout()" style="height:30px;padding:0 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;font-size:11px;font-weight:500;color:#6b7280;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';" onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#6b7280';">' +
-        '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
-        'ログアウト' +
-      '</button>';
-    topbar.appendChild(div);
+function togglePw() {
+  const input = document.getElementById('password');
+  const eye    = document.getElementById('pw-eye');
+  const eyeOff = document.getElementById('pw-eye-off');
+  if (input.type === 'password') {
+    input.type = 'text';
+    eye.style.display = 'none';
+    eyeOff.style.display = 'block';
+  } else {
+    input.type = 'password';
+    eye.style.display = 'block';
+    eyeOff.style.display = 'none';
   }
-  document.addEventListener('DOMContentLoaded', injectUserInfo);
-})();
-
-function imsLogout() {
-  if (!confirm('ログアウトしますか？')) return;
-  localStorage.removeItem('ims_token');
-  location.replace('login.html');
 }
-  // 共通データストア（localStorage）
-  function loadStats() {
-    const products   = JSON.parse(localStorage.getItem('ims_products')   || '[]');
-    const employees  = JSON.parse(localStorage.getItem('ims_employees')  || '[]');
-    const sites      = JSON.parse(localStorage.getItem('ims_sites')      || '[]');
-    const inventory  = JSON.parse(localStorage.getItem('ims_inventory')  || '[]');
-    document.getElementById('stat-products').textContent   = products.length;
-    document.getElementById('stat-employees').textContent  = employees.length;
-    document.getElementById('stat-sites').textContent      = sites.length;
-    document.getElementById('stat-inventory').textContent  = inventory.length;
-  }
-  loadStats();
 
-  const now = new Date();
-  document.getElementById('current-date').textContent =
-    now.toLocaleDateString('ja-JP', {year:'numeric', month:'long', day:'numeric', weekday:'short'});
+function showError(msg) {
+  const box = document.getElementById('error-msg');
+  document.getElementById('error-text').textContent = msg;
+  box.classList.add('show');
+  document.getElementById('emp-code').classList.add('error');
+  document.getElementById('password').classList.add('error');
+}
+
+function clearError() {
+  document.getElementById('error-msg').classList.remove('show');
+  document.getElementById('emp-code').classList.remove('error');
+  document.getElementById('password').classList.remove('error');
+}
+
+['emp-code','password'].forEach(id => {
+  document.getElementById(id).addEventListener('input', clearError);
+});
+
+function doLogin() {
+  const empCode  = document.getElementById('emp-code').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!empCode)  { showError('担当者コードを入力してください'); return; }
+  if (!password) { showError('パスワードを入力してください'); return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  // 少し遅延を入れてUXを改善
+  setTimeout(() => {
+    const employees = load(KEYS.emp);
+    const accounts  = JSON.parse(localStorage.getItem('ims_accounts') || '[]');
+
+    if (employees.length === 0) {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      showError('担当者が登録されていません。管理者に連絡してください。');
+      return;
+    }
+
+    // 担当者コードが登録済みか確認
+    const emp = employees.find(e => e.code === empCode);
+    if (!emp) {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      showError('担当者コードまたはパスワードが正しくありません');
+      return;
+    }
+
+    // アカウント情報からパスワード検証
+    // ims_accountsに登録がない場合（旧データ互換）は固定形式にフォールバック
+    const account = accounts.find(a => a.code === empCode);
+    const expectedPw = account ? account.password : ('password-' + empCode);
+
+    if (password !== expectedPw) {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      showError('担当者コードまたはパスワードが正しくありません');
+      return;
+    }
+
+    // ログイン成功 → 消費型トークンを localStorage に保存
+    const token = { empCode: emp.code, empName: emp.name, loginAt: Date.now() };
+    localStorage.setItem(KEYS.token, JSON.stringify(token));
+
+    const dest = localStorage.getItem(KEYS.redirect) || 'top.html';
+    localStorage.removeItem(KEYS.redirect);
+    location.replace(dest);
+  }, 400);
+}
+
+// フォーカスを担当者コード欄に
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('emp-code').focus();
+});
 </script>
-
-<nav class="bottom-nav">
-  <a class="bottom-nav-item active" href="registration.html">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-    登録
-    <span class="nav-dot"></span>
-  </a>
-  <a class="bottom-nav-item" href="inventory.html">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4M9 17V9m0 8h6V9m0 8V9M9 9h6"/></svg>
-    在庫
-    <span class="nav-dot"></span>
-  </a>
-  <a class="bottom-nav-item" href="product.html">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-    商品
-    <span class="nav-dot"></span>
-  </a>
-  <a class="bottom-nav-item" href="site.html">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-    事業所
-    <span class="nav-dot"></span>
-  </a>
-</nav>
 </body>
 </html>
