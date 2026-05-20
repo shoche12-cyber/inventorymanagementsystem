@@ -6,9 +6,9 @@
 (function() {
   var raw = localStorage.getItem('ims_token');
   if (!raw) {
-    var page = (location.pathname.split('/').pop() || 'index.html');
+    var page = (location.pathname.split('/').pop() || 'top.html');
     localStorage.setItem('ims_redirect', page);
-    location.replace('login.html');
+    location.replace('top.html');
     throw new Error('redirect');
   }
   try {
@@ -18,9 +18,9 @@
     window.IMS_SESSION = s;
   } catch(e) {
     localStorage.removeItem('ims_token');
-    var page2 = (location.pathname.split('/').pop() || 'index.html');
+    var page2 = (location.pathname.split('/').pop() || 'top.html');
     localStorage.setItem('ims_redirect', page2);
-    location.replace('login.html');
+    location.replace('top.html');
     throw new Error('redirect');
   }
 })();
@@ -196,7 +196,7 @@
   </div>
   <nav class="sidebar-nav">
     <div class="nav-label">メニュー</div>
-    <a class="nav-item" href="index.html">
+    <a class="nav-item" href="top.html">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       トップ
     </a>
@@ -343,7 +343,7 @@
 function imsLogout() {
   if (!confirm('ログアウトしますか？')) return;
   localStorage.removeItem('ims_token');
-  location.replace('login.html');
+  location.replace('top.html');
 }
 const KEY = 'ims_classifications';
 const load = () => JSON.parse(localStorage.getItem(KEY)||'[]');
