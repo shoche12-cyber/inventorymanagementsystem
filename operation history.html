@@ -81,7 +81,25 @@
   .btn-success:hover { background: var(--btn-green-h); }
   .btn-warning { background: var(--btn-orange); color: #fff; }
   .btn-warning:hover { background: var(--btn-orange-h); }
+  .btn-indigo { background: #6366f1; color: #fff; }
+  .btn-indigo:hover { background: #4f46e5; }
   .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* 在庫移動モーダル専用 */
+  .transfer-arrow {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; margin: 4px 0 12px;
+    padding: 10px 14px; background: #f0f7ff; border-radius: 8px;
+    font-size: 12px; color: var(--text-secondary);
+  }
+  .transfer-arrow .site-box {
+    flex: 1; background: #fff; border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 10px; font-size: 12px;
+    font-family: 'DM Mono', monospace; color: var(--accent);
+    text-align: center; min-height: 32px; display: flex; align-items: center; justify-content: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .transfer-arrow .arrow-icon { flex-shrink: 0; color: #6366f1; }
 
   /* ── テーブル ── */
   .table-wrap { overflow-x: auto; }
@@ -213,6 +231,10 @@
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           操作登録
         </button>
+        <button class="btn btn-indigo" onclick="openTransferModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          在庫移動
+        </button>
         <button class="btn btn-warning" id="export-btn" disabled onclick="exportExcel()">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           帳票出力
@@ -284,6 +306,51 @@
     <div class="modal-btns">
       <button class="btn btn-secondary" onclick="closeModal('reg-modal')">キャンセル</button>
       <button class="btn btn-success" onclick="registerOp()">登録</button>
+    </div>
+  </div>
+</div>
+
+<!-- 在庫移動モーダル -->
+<div class="modal-overlay" id="transfer-modal">
+  <div class="modal">
+    <h3>在庫移動</h3>
+
+    <div class="form-group">
+      <label>日付</label>
+      <input type="date" id="t-date" />
+    </div>
+    <div class="form-group">
+      <label>商品コード</label>
+      <input type="text" id="t-prod" placeholder="コードを入力" oninput="updateTransferPreview()" />
+    </div>
+    <div class="form-group">
+      <label>担当者コード</label>
+      <input type="text" id="t-emp" placeholder="コードを入力" />
+    </div>
+
+    <!-- 移動元 → 移動先 ビジュアル -->
+    <div class="form-group">
+      <label>移動元事業所コード</label>
+      <input type="text" id="t-from" placeholder="コードを入力" oninput="updateTransferPreview()" />
+    </div>
+    <div class="transfer-arrow" id="transfer-preview">
+      <div class="site-box" id="t-from-label">移動元</div>
+      <svg class="arrow-icon" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      <div class="site-box" id="t-to-label">移動先</div>
+    </div>
+    <div class="form-group">
+      <label>移動先事業所コード</label>
+      <input type="text" id="t-to" placeholder="コードを入力" oninput="updateTransferPreview()" />
+    </div>
+
+    <div class="form-group">
+      <label>個数</label>
+      <input type="number" id="t-qty" placeholder="個数を入力" min="1" />
+    </div>
+
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal('transfer-modal')">キャンセル</button>
+      <button class="btn btn-indigo" onclick="registerTransfer()">移動登録</button>
     </div>
   </div>
 </div>
@@ -439,6 +506,85 @@ function exportExcel() {
   a.href = URL.createObjectURL(blob);
   a.download = '在庫帳票_' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
+}
+
+// ── 在庫移動 ──────────────────────────────
+function openTransferModal() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('t-date').value = today;
+  ['t-prod','t-emp','t-from','t-to','t-qty'].forEach(id => document.getElementById(id).value = '');
+  updateTransferPreview();
+  document.getElementById('transfer-modal').classList.add('open');
+}
+
+// 移動元・移動先のプレビュー表示を更新
+function updateTransferPreview() {
+  const sites   = load(KEYS.site);
+  const fromCode = document.getElementById('t-from').value.trim();
+  const toCode   = document.getElementById('t-to').value.trim();
+  const prodCode = document.getElementById('t-prod').value.trim();
+
+  const fromSite = sites.find(s => s.code === fromCode);
+  const toSite   = sites.find(s => s.code === toCode);
+
+  document.getElementById('t-from-label').textContent =
+    fromCode ? (fromSite ? `${fromSite.name} (${fromCode})` : fromCode) : '移動元';
+  document.getElementById('t-to-label').textContent =
+    toCode   ? (toSite   ? `${toSite.name} (${toCode})`     : toCode)   : '移動先';
+}
+
+function registerTransfer() {
+  const date     = document.getElementById('t-date').value;
+  const prodCode = document.getElementById('t-prod').value.trim();
+  const empCode  = document.getElementById('t-emp').value.trim();
+  const fromCode = document.getElementById('t-from').value.trim();
+  const toCode   = document.getElementById('t-to').value.trim();
+  const qty      = parseInt(document.getElementById('t-qty').value);
+
+  // バリデーション
+  if (!date || !prodCode || !empCode || !fromCode || !toCode || !qty || qty < 1) {
+    alert('すべての項目を正しく入力してください。'); return;
+  }
+  if (fromCode === toCode) {
+    alert('移動元と移動先に同じ事業所コードは指定できません。'); return;
+  }
+
+  // 担当者コードから担当者名を取得（なければコードをそのまま使用）
+  const emp = load(KEYS.emp).find(e => e.code === empCode);
+  const empName = emp ? emp.name : empCode;
+
+  const inv = load(KEYS.inv);
+  const now = Date.now();
+
+  // 移動元：出庫（02）として記録
+  inv.push({
+    id: 'TRF-OUT-' + now,
+    siteCode: fromCode,
+    empName,
+    productCode: prodCode,
+    opCode: '02',
+    qty,
+    date,
+    operation: '出庫',
+    transferNote: `在庫移動 → ${toCode}`
+  });
+
+  // 移動先：入庫（01）として記録
+  inv.push({
+    id: 'TRF-IN-' + now,
+    siteCode: toCode,
+    empName,
+    productCode: prodCode,
+    opCode: '01',
+    qty,
+    date,
+    operation: '入庫',
+    transferNote: `在庫移動 ← ${fromCode}`
+  });
+
+  save(KEYS.inv, inv);
+  closeModal('transfer-modal');
+  alert(`在庫移動を登録しました。\n${getSiteName(fromCode)} → ${getSiteName(toCode)}\n商品：${prodCode}　個数：${qty}`);
 }
 </script>
 </body>
