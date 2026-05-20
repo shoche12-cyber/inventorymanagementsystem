@@ -293,25 +293,10 @@
 </div>
 
 <script>
-const KEYS = { emp: 'ims_employees', session: 'ims_session' };
+const KEYS = { emp: 'ims_employees', accounts: 'ims_accounts', token: 'ims_token', redirect: 'ims_redirect' };
 const load = k => JSON.parse(localStorage.getItem(k) || '[]');
-const saveSession = v => sessionStorage.setItem(KEYS.session, JSON.stringify(v));
 
-// ─── ログイン済みなら即リダイレクト ───────────────
-(function() {
-  const sess = sessionStorage.getItem(KEYS.session);
-  if (sess) {
-    try {
-      const s = JSON.parse(sess);
-      if (s && s.empCode) {
-        // リダイレクト先があればそこへ、なければindex.html
-        const dest = sessionStorage.getItem('ims_redirect') || 'index.html';
-        sessionStorage.removeItem('ims_redirect');
-        location.replace(dest);
-      }
-    } catch(e) {}
-  }
-})();
+// 毎回ログイン方式 - ログイン済みチェックなし
 
 function togglePw() {
   const input = document.getElementById('password');
@@ -390,11 +375,12 @@ function doLogin() {
       return;
     }
 
-    // ログイン成功 → セッションに保存
-    saveSession({ empCode: emp.code, empName: emp.name, loginAt: Date.now() });
+    // ログイン成功 → 消費型トークンを localStorage に保存
+    const token = { empCode: emp.code, empName: emp.name, loginAt: Date.now() };
+    localStorage.setItem(KEYS.token, JSON.stringify(token));
 
-    const dest = sessionStorage.getItem('ims_redirect') || 'index.html';
-    sessionStorage.removeItem('ims_redirect');
+    const dest = localStorage.getItem(KEYS.redirect) || 'index.html';
+    localStorage.removeItem(KEYS.redirect);
     location.replace(dest);
   }, 400);
 }
