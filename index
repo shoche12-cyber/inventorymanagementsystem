@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>在庫管理システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --sidebar-bg: #1a1f2e;
+    --sidebar-active: #2d3550;
+    --sidebar-text: #a0a8c0;
+    --sidebar-active-text: #ffffff;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --card-bg: #ffffff;
+    --text-primary: #1e2436;
+    --text-secondary: #6b7280;
+    --border: #e5e7eb;
+    --sidebar-width: 220px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── サイドバー ── */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .sidebar-logo span {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+
+  .sidebar-logo small {
+    display: block;
+    font-size: 10px;
+    color: var(--sidebar-text);
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .sidebar-nav {
+    padding: 16px 0;
+    flex: 1;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #4a5270;
+    padding: 8px 20px 4px;
+    font-weight: 500;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 400;
+    transition: all 0.18s ease;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+
+  .nav-item:hover {
+    background: var(--sidebar-active);
+    color: #ffffff;
+  }
+
+  .nav-item.active {
+    background: var(--sidebar-active);
+    color: var(--sidebar-active-text);
+    border-left-color: var(--accent);
+    font-weight: 500;
+  }
+
+  .nav-icon {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-icon,
+  .nav-item:hover .nav-icon { opacity: 1; }
+
+  /* ── メインコンテンツ ── */
+  .main {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .topbar-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .content {
+    padding: 32px;
+    flex: 1;
+  }
+
+  /* ── トップページ固有 ── */
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .page-header p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  .menu-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .menu-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 20px rgba(59,130,246,0.12);
+    transform: translateY(-2px);
+  }
+
+  .menu-card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .menu-card-icon svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .icon-blue   { background: #eff6ff; color: #3b82f6; }
+  .icon-green  { background: #f0fdf4; color: #22c55e; }
+  .icon-purple { background: #faf5ff; color: #a855f7; }
+  .icon-orange { background: #fff7ed; color: #f97316; }
+  .icon-teal   { background: #f0fdfa; color: #14b8a6; }
+
+  .menu-card-info h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .menu-card-info p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+
+  .stat-card .label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .stat-card .value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .stat-card .sub {
+    font-size: 11px;
+    color: #22c55e;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- サイドバー -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span>在庫管理</span>
+    <small>Inventory Management System</small>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">メニュー</div>
+    <a class="nav-item active" href="index.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      トップ
+    </a>
+    <a class="nav-item" href="inventory.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      在庫
+    </a>
+    <a class="nav-item" href="product.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+      商品
+    </a>
+    <a class="nav-item" href="classification.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+      商品分類
+    </a>
+    <a class="nav-item" href="enployee.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      担当者
+    </a>
+    <a class="nav-item" href="site.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      事業所
+    </a>
+  </nav>
+</aside>
+
+<!-- メインコンテンツ -->
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title">ダッシュボード</div>
+    <div class="topbar-right">
+      <span id="current-date"></span>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <h1>在庫管理システム</h1>
+      <p>管理メニューを選択してください</p>
+    </div>
+
+    <!-- サマリー -->
+    <div class="summary-bar">
+      <div class="stat-card">
+        <div class="label">登録商品数</div>
+        <div class="value" id="stat-products">—</div>
+        <div class="sub">件</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">担当者数</div>
+        <div class="value" id="stat-employees">—</div>
+        <div class="sub">名</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">事業所数</div>
+        <div class="value" id="stat-sites">—</div>
+        <div class="sub">拠点</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">在庫操作数</div>
+        <div class="value" id="stat-inventory">—</div>
+        <div class="sub">件</div>
+      </div>
+    </div>
+
+    <!-- メニューカード -->
+    <div class="menu-grid">
+      <a class="menu-card" href="inventory.html">
+        <div class="menu-card-icon icon-blue">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div class="menu-card-info">
+          <h3>在庫</h3>
+          <p>在庫の検索・操作登録・帳票出力</p>
+        </div>
+      </a>
+      <a class="menu-card" href="product.html">
+        <div class="menu-card-icon icon-green">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        </div>
+        <div class="menu-card-info">
+          <h3>商品</h3>
+          <p>商品情報の検索・新規登録</p>
+        </div>
+      </a>
+      <a class="menu-card" href="classification.html">
+        <div class="menu-card-icon icon-purple">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+        </div>
+        <div class="menu-card-info">
+          <h3>商品分類</h3>
+          <p>大分類・小分類の管理</p>
+        </div>
+      </a>
+      <a class="menu-card" href="enployee.html">
+        <div class="menu-card-icon icon-orange">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="menu-card-info">
+          <h3>担当者</h3>
+          <p>担当者の検索・新規登録</p>
+        </div>
+      </a>
+      <a class="menu-card" href="site.html">
+        <div class="menu-card-icon icon-teal">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        </div>
+        <div class="menu-card-info">
+          <h3>事業所</h3>
+          <p>事業所の検索・新規登録</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</main>
+
+<script>
+  // 共通データストア（localStorage）
+  function loadStats() {
+    const products   = JSON.parse(localStorage.getItem('ims_products')   || '[]');
+    const employees  = JSON.parse(localStorage.getItem('ims_employees')  || '[]');
+    const sites      = JSON.parse(localStorage.getItem('ims_sites')      || '[]');
+    const inventory  = JSON.parse(localStorage.getItem('ims_inventory')  || '[]');
+    document.getElementById('stat-products').textContent   = products.length;
+    document.getElementById('stat-employees').textContent  = employees.length;
+    document.getElementById('stat-sites').textContent      = sites.length;
+    document.getElementById('stat-inventory').textContent  = inventory.length;
+  }
+  loadStats();
+
+  const now = new Date();
+  document.getElementById('current-date').textContent =
+    now.toLocaleDateString('ja-JP', {year:'numeric', month:'long', day:'numeric', weekday:'short'});
+</script>
+</body>
+</html>
