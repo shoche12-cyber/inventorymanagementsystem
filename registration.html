@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>登録 | 在庫管理システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- ZXing バーコードライブラリ -->
+<script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --sidebar-bg: #1a1f2e;
+    --sidebar-active: #2d3550;
+    --sidebar-text: #a0a8c0;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --card-bg: #ffffff;
+    --text-primary: #1e2436;
+    --text-secondary: #6b7280;
+    --border: #e5e7eb;
+    --sidebar-width: 220px;
+    --btn-green: #22c55e;
+    --btn-green-h: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text-primary); display: flex; min-height: 100vh; }
+
+  /* ══ PC：サイドバー ══ */
+  .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+  .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .sidebar-logo span { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; color: #fff; text-transform: uppercase; }
+  .sidebar-logo small { display: block; font-size: 10px; color: var(--sidebar-text); margin-top: 2px; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #4a5270; padding: 8px 20px 4px; font-weight: 500; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--sidebar-text); text-decoration: none; font-size: 13.5px; font-weight: 400; transition: all 0.18s ease; cursor: pointer; border-left: 3px solid transparent; }
+  .nav-item:hover { background: var(--sidebar-active); color: #fff; }
+  .nav-item.active { background: var(--sidebar-active); color: #fff; border-left-color: var(--accent); font-weight: 500; }
+  .nav-icon { width: 18px; height: 18px; opacity: 0.7; flex-shrink: 0; }
+  .nav-item.active .nav-icon, .nav-item:hover .nav-icon { opacity: 1; }
+
+  /* ══ メイン ══ */
+  .main { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; }
+  .topbar { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; }
+  .topbar-title { font-size: 15px; font-weight: 600; }
+  .content { padding: 24px 32px; flex: 1; }
+
+  /* ══ カード ══ */
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; }
+
+  /* ══ フォーム ══ */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px 20px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+  .input-with-btn { display: flex; gap: 6px; }
+  .input-with-btn input { flex: 1; }
+  .form-group input, .form-group select {
+    height: 44px; border: 1px solid var(--border); border-radius: 7px;
+    padding: 0 12px; font-size: 14px; font-family: inherit; color: var(--text-primary);
+    background: #fafafa; outline: none; transition: border-color 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--accent); background: #fff; }
+
+  /* ══ ボタン ══ */
+  .btn-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .btn { height: 44px; padding: 0 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-success { background: var(--btn-green); color: #fff; flex: 1; justify-content: center; }
+  .btn-success:hover { background: var(--btn-green-h); }
+  .btn-secondary { background: #f3f4f6; color: var(--text-secondary); }
+  .btn-secondary:hover { background: #e5e7eb; }
+  .btn-scan { height: 44px; width: 44px; padding: 0; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: var(--accent); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+  .btn-scan:hover { background: #eff6ff; border-color: var(--accent); }
+  .btn-scan.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ══ 商品プレビューカード ══ */
+  .product-preview {
+    display: none;
+    background: #f0f7ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 8px;
+    gap: 12px;
+    align-items: center;
+  }
+  .product-preview.show { display: flex; }
+  .product-preview img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; }
+  .product-preview .no-img { width: 48px; height: 48px; border-radius: 6px; background: #dbeafe; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .product-preview .prod-info { flex: 1; }
+  .product-preview .prod-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .product-preview .prod-code { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--accent); margin-top: 2px; }
+  .product-preview .prod-cls  { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ══ バーコードスキャナー ══ */
+  .scanner-wrap {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 500;
+    flex-direction: column;
+  }
+  .scanner-wrap.open { display: flex; }
+  .scanner-header {
+    background: rgba(0,0,0,0.7);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #fff;
+  }
+  .scanner-header span { font-size: 15px; font-weight: 600; }
+  .scanner-close {
+    background: none; border: none; color: #fff; cursor: pointer;
+    padding: 4px; display: flex; align-items: center;
+  }
+  .scanner-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #scanner-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .scanner-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .scan-frame {
+    width: 260px;
+    height: 160px;
+    border: none;
+    position: relative;
+  }
+  .scan-frame::before, .scan-frame::after,
+  .scan-frame .corner-br, .scan-frame .corner-bl {
+    content: '';
+    position: absolute;
+    width: 32px; height: 32px;
+    border-color: #60a5fa;
+    border-style: solid;
+  }
+  .scan-frame::before  { top: 0; left: 0;    border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+  .scan-frame::after   { top: 0; right: 0;   border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+  .scan-frame .corner-br { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+  .scan-frame .corner-bl { bottom: 0; left: 0;  border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+  .scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #60a5fa, transparent);
+    animation: scanline 2s ease-in-out infinite;
+  }
+  @keyframes scanline {
+    0%   { top: 0; opacity: 1; }
+    90%  { top: 100%; opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+  .scan-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 0; right: 0;
+    text-align: center;
+    color: rgba(255,255,255,0.8);
+    font-size: 13px;
+  }
+  .scan-result-flash {
+    position: absolute;
+    inset: 0;
+    background: rgba(96,165,250,0.25);
+    display: none;
+    pointer-events: none;
+  }
+  .scan-result-flash.flash { display: block; animation: flash 0.4s ease-out forwards; }
+  @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
+
+  /* ══ 登録完了トースト ══ */
+  .toast {
+    position: fixed;
+    bottom: 84px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1a1f2e;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 300;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 8px;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ══ 操作コード選択（大きなタイル） ══ */
+  .op-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+  .op-tile {
+    padding: 12px 8px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fafafa;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .op-tile:hover { border-color: #94a3b8; background: #f1f5f9; }
+  .op-tile.selected { border-color: currentColor; }
+  .op-tile .op-code { font-family: 'DM Mono', monospace; font-size: 10px; opacity: 0.6; }
+  .op-tile[data-op="01"] { color: #16a34a; }
+  .op-tile[data-op="01"].selected { background: #dcfce7; border-color: #16a34a; }
+  .op-tile[data-op="02"] { color: #dc2626; }
+  .op-tile[data-op="02"].selected { background: #fee2e2; border-color: #dc2626; }
+  .op-tile[data-op="03"] { color: #ea580c; }
+  .op-tile[data-op="03"].selected { background: #fff7ed; border-color: #ea580c; }
+  .op-tile[data-op="04"] { color: #2563eb; }
+  .op-tile[data-op="04"].selected { background: #eff6ff; border-color: #2563eb; }
+
+  /* ══ 下部タブナビ（スマホのみ） ══ */
+  .bottom-nav { display: none; }
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .topbar { padding: 0 16px; }
+    .content { padding: 16px; padding-bottom: 88px; }
+    .card { padding: 16px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .op-tiles { grid-template-columns: 1fr 1fr; }
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 64px;
+      background: #1a1f2e;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      z-index: 200;
+    }
+    .bottom-nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 3px;
+      color: #6b7a9f; text-decoration: none;
+      font-size: 10px; font-weight: 500;
+      padding: 8px 4px;
+      transition: color 0.15s;
+      border: none; background: none; font-family: inherit; cursor: pointer;
+    }
+    .bottom-nav-item svg { width: 22px; height: 22px; }
+    .bottom-nav-item.active { color: #60a5fa; }
+    .bottom-nav-item .nav-dot { display: none; }
+    .bottom-nav-item.active .nav-dot { display: block; width: 4px; height: 4px; border-radius: 50%; background: #60a5fa; margin-top: -2px; }
+  }
+
+  /* 登録タブ：PCでは非表示、スマホのみ表示 */
+  .nav-item.mobile-only { display: none; }
+  @media (max-width: 768px) {
+    .nav-item.mobile-only { display: flex; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PC：サイドバー -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span>在庫管理</span>
+    <small>Inventory Management System</small>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">メニュー</div>
+    <a class="nav-item" href="index.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>トップ
+    </a>
+    <a class="nav-item" href="inventory.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4M9 17V9m0 8h6V9m0 8V9M9 9h6"/></svg>在庫
+    </a>
+    <a class="nav-item" href="operation history.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>操作履歴
+    </a>
+    <a class="nav-item active mobile-only" href="registration.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>登録
+    </a>
+    <a class="nav-item" href="product.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>商品
+    </a>
+    <a class="nav-item" href="classification.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>商品分類
+    </a>
+    <a class="nav-item" href="enployee.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>担当者
+    </a>
+    <a class="nav-item" href="site.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>事業所
+    </a>
+  </nav>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title">操作登録</div>
+  </header>
+
+  <div class="content">
+    <div class="card">
+      <div class="card-title">操作登録</div>
+      <div class="form-grid">
+
+        <!-- 商品コード（バーコードスキャン付き） -->
+        <div class="form-group">
+          <label>商品コード</label>
+          <div class="input-with-btn">
+            <input type="text" id="r-prod" placeholder="商品コードを入力"
+              oninput="onProdCodeInput(this.value)" autocomplete="off" />
+            <button class="btn-scan" id="scan-btn" onclick="openScanner('product')" title="バーコードをスキャン">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="6" width="2" height="12"/><rect x="7" y="6" width="1" height="12"/>
+                <rect x="10" y="6" width="2" height="12"/><rect x="14" y="6" width="1" height="12"/>
+                <rect x="17" y="6" width="2" height="12"/>
+                <path d="M1 4h3M20 4h3M1 20h3M20 20h3"/>
+              </svg>
+            </button>
+          </div>
+          <!-- 商品プレビュー -->
+          <div class="product-preview" id="prod-preview">
+            <div class="no-img" id="prod-img-wrap">
+              <svg width="22" height="22" fill="none" stroke="#93c5fd" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div class="prod-info">
+              <div class="prod-name" id="prod-name">—</div>
+              <div class="prod-code" id="prod-code-disp">—</div>
+              <div class="prod-cls"  id="prod-cls-disp">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- JANコード（バーコードスキャン付き） -->
+        <div class="form-group">
+          <label>JANコード <span style="font-size:10px;color:#aaa;">（商品コードの代わりに入力可）</span></label>
+          <div class="input-with-btn">
+            <input type="text" id="r-jan" placeholder="JANコードを入力"
+              oninput="onJanInput(this.value)" autocomplete="off" />
+            <button class="btn-scan" onclick="openScanner('jan')" title="バーコードをスキャン">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="6" width="2" height="12"/><rect x="7" y="6" width="1" height="12"/>
+                <rect x="10" y="6" width="2" height="12"/><rect x="14" y="6" width="1" height="12"/>
+                <rect x="17" y="6" width="2" height="12"/>
+                <path d="M1 4h3M20 4h3M1 20h3M20 20h3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 事業所コード -->
+        <div class="form-group">
+          <label>事業所コード</label>
+          <input type="text" id="r-site" placeholder="事業所コードを入力" list="site-list" />
+          <datalist id="site-list"></datalist>
+        </div>
+
+        <!-- 担当者コード -->
+        <div class="form-group">
+          <label>担当者コード</label>
+          <input type="text" id="r-emp" placeholder="担当者コードを入力" list="emp-list" />
+          <datalist id="emp-list"></datalist>
+        </div>
+
+        <!-- 操作コード（タイル選択） -->
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>操作コード</label>
+          <div class="op-tiles">
+            <button class="op-tile" data-op="01" onclick="selectOp('01')">
+              <div>入庫</div>
+              <div class="op-code">コード: 01</div>
+            </button>
+            <button class="op-tile" data-op="02" onclick="selectOp('02')">
+              <div>出庫</div>
+              <div class="op-code">コード: 02</div>
+            </button>
+            <button class="op-tile" data-op="03" onclick="selectOp('03')">
+              <div>持ち出し</div>
+              <div class="op-code">コード: 03</div>
+            </button>
+            <button class="op-tile" data-op="04" onclick="selectOp('04')">
+              <div>返却</div>
+              <div class="op-code">コード: 04</div>
+            </button>
+          </div>
+          <input type="hidden" id="r-op" />
+        </div>
+
+        <!-- 数量 -->
+        <div class="form-group">
+          <label>数量</label>
+          <input type="number" id="r-qty" placeholder="数量を入力" min="1" value="1" />
+        </div>
+
+        <!-- 日付 -->
+        <div class="form-group">
+          <label>日付</label>
+          <input type="date" id="r-date" />
+        </div>
+
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="resetForm()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.49"/></svg>
+          リセット
+        </button>
+        <button class="btn btn-success" onclick="registerOp()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          登録する
+        </button>
+      </div>
+    </div>
+
+    <!-- 最近の登録履歴（直近5件） -->
+    <div class="card">
+      <div class="card-title">直近の登録</div>
+      <div id="recent-list" style="font-size:13px;color:var(--text-secondary);text-align:center;padding:20px;">
+        まだ登録がありません
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ══ バーコードスキャナー ══ -->
+<div class="scanner-wrap" id="scanner-wrap">
+  <div class="scanner-header">
+    <span id="scanner-title">バーコードをスキャン</span>
+    <button class="scanner-close" onclick="closeScanner()">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="scanner-body">
+    <video id="scanner-video" playsinline></video>
+    <div class="scanner-overlay">
+      <div class="scan-frame">
+        <div class="corner-br"></div>
+        <div class="corner-bl"></div>
+        <div class="scan-line"></div>
+      </div>
+    </div>
+    <div class="scan-result-flash" id="scan-flash"></div>
+    <div class="scan-hint">バーコードをフレーム内に合わせてください</div>
+  </div>
+</div>
+
+<!-- ══ トースト通知 ══ -->
+<div class="toast" id="toast">
+  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg">登録しました</span>
+</div>
+
+<!-- ══ 下部タブナビ（スマホのみ） ══ -->
+<nav class="bottom-nav">
+  <a class="bottom-nav-item active" href="registration.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    登録
+    <span class="nav-dot"></span>
+  </a>
+  <a class="bottom-nav-item" href="inventory.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4M9 17V9m0 8h6V9m0 8V9M9 9h6"/></svg>
+    在庫
+    <span class="nav-dot"></span>
+  </a>
+  <a class="bottom-nav-item" href="product.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+    商品
+    <span class="nav-dot"></span>
+  </a>
+  <a class="bottom-nav-item" href="site.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+    事業所
+    <span class="nav-dot"></span>
+  </a>
+</nav>
+
+<script>
+const KEYS = { inv:'ims_inventory', prod:'ims_products', emp:'ims_employees', site:'ims_sites', cls:'ims_classifications' };
+const load = k => JSON.parse(localStorage.getItem(k)||'[]');
+const save = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+const OP_MAP = { '01':'入庫', '02':'出庫', '03':'持ち出し', '04':'返却' };
+
+let selectedOp = '';
+let scanTarget = 'product'; // 'product' | 'jan'
+let codeReader = null;
+let scannerActive = false;
+
+// ── 初期化 ────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
+  loadDataLists();
+  renderRecent();
+});
+
+function loadDataLists() {
+  const siteList = document.getElementById('site-list');
+  siteList.innerHTML = load(KEYS.site).map(s =>
+    `<option value="${s.code}">${s.name}（${s.code}）</option>`).join('');
+  const empList = document.getElementById('emp-list');
+  empList.innerHTML = load(KEYS.emp).map(e =>
+    `<option value="${e.code}">${e.name}（${e.code}）</option>`).join('');
+}
+
+// ── 操作コードタイル ────────────────────────
+function selectOp(code) {
+  selectedOp = code;
+  document.getElementById('r-op').value = code;
+  document.querySelectorAll('.op-tile').forEach(t => {
+    t.classList.toggle('selected', t.dataset.op === code);
+  });
+}
+
+// ── 商品コード入力 → プレビュー ─────────────
+function getClassName(clsCode) {
+  for (const c of load(KEYS.cls)) {
+    const sub = c.subs && c.subs.find(s => s.code === clsCode);
+    if (sub) return `${c.name} > ${sub.name}`;
+  }
+  return clsCode || '—';
+}
+
+function showProductPreview(prod) {
+  const preview = document.getElementById('prod-preview');
+  if (!prod) { preview.classList.remove('show'); return; }
+  document.getElementById('prod-name').textContent     = prod.name;
+  document.getElementById('prod-code-disp').textContent = prod.code + (prod.jan ? ` / JAN: ${prod.jan}` : '');
+  document.getElementById('prod-cls-disp').textContent  = getClassName(prod.classification);
+  const wrap = document.getElementById('prod-img-wrap');
+  if (prod.image) {
+    wrap.innerHTML = `<img src="${prod.image}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;">`;
+  } else {
+    wrap.innerHTML = `<svg width="22" height="22" fill="none" stroke="#93c5fd" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+  }
+  preview.classList.add('show');
+}
+
+function onProdCodeInput(val) {
+  const prod = load(KEYS.prod).find(p => p.code === val.trim());
+  showProductPreview(prod || null);
+  if (prod && prod.jan) document.getElementById('r-jan').value = prod.jan;
+}
+
+function onJanInput(val) {
+  const prod = load(KEYS.prod).find(p => p.jan === val.trim());
+  if (prod) {
+    document.getElementById('r-prod').value = prod.code;
+    showProductPreview(prod);
+  }
+}
+
+// ── バーコードスキャナー ───────────────────
+function openScanner(target) {
+  scanTarget = target;
+  const title = target === 'jan' ? 'JANコードをスキャン' : '商品コードをスキャン';
+  document.getElementById('scanner-title').textContent = title;
+  document.getElementById('scanner-wrap').classList.add('open');
+  startScan();
+}
+
+async function startScan() {
+  if (scannerActive) return;
+  scannerActive = true;
+
+  // ZXingが利用可能か確認
+  if (typeof ZXing === 'undefined') {
+    alert('バーコードライブラリの読み込みに失敗しました。\nインターネット接続を確認してください。');
+    closeScanner();
+    return;
+  }
+
+  try {
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    const videoEl = document.getElementById('scanner-video');
+
+    await codeReader.decodeFromConstraints(
+      {
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      },
+      videoEl,
+      (result, err) => {
+        if (result) {
+          const code = result.getText();
+          // フラッシュ演出
+          const flash = document.getElementById('scan-flash');
+          flash.classList.add('flash');
+          setTimeout(() => flash.classList.remove('flash'), 400);
+
+          // 対象フィールドに値をセット
+          if (scanTarget === 'jan') {
+            document.getElementById('r-jan').value = code;
+            onJanInput(code);
+          } else {
+            document.getElementById('r-prod').value = code;
+            onProdCodeInput(code);
+          }
+
+          // 短いバイブレーション（対応端末のみ）
+          if (navigator.vibrate) navigator.vibrate(80);
+
+          // スキャナーを閉じる
+          setTimeout(() => closeScanner(), 300);
+        }
+      }
+    );
+  } catch (e) {
+    console.error('Scanner error:', e);
+    let msg = 'カメラの起動に失敗しました。';
+    if (e.name === 'NotAllowedError') msg = 'カメラへのアクセスが拒否されました。\nブラウザの設定からカメラ権限を許可してください。';
+    else if (e.name === 'NotFoundError') msg = 'カメラが見つかりません。';
+    alert(msg);
+    closeScanner();
+  }
+}
+
+function closeScanner() {
+  if (codeReader) {
+    try { codeReader.reset(); } catch(e) {}
+    codeReader = null;
+  }
+  scannerActive = false;
+  document.getElementById('scanner-wrap').classList.remove('open');
+  // ビデオストリームを停止
+  const video = document.getElementById('scanner-video');
+  if (video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+    video.srcObject = null;
+  }
+}
+
+// ── 登録処理 ─────────────────────────────
+function registerOp() {
+  const prodCode = document.getElementById('r-prod').value.trim();
+  const siteCode = document.getElementById('r-site').value.trim();
+  const empCode  = document.getElementById('r-emp').value.trim();
+  const opCode   = document.getElementById('r-op').value;
+  const qty      = parseInt(document.getElementById('r-qty').value);
+  const date     = document.getElementById('r-date').value;
+
+  if (!prodCode) { showToast('⚠ 商品コードを入力してください', true); return; }
+  if (!siteCode) { showToast('⚠ 事業所コードを入力してください', true); return; }
+  if (!empCode)  { showToast('⚠ 担当者コードを入力してください', true); return; }
+  if (!opCode)   { showToast('⚠ 操作コードを選択してください', true); return; }
+  if (!qty || qty < 1) { showToast('⚠ 数量を入力してください', true); return; }
+  if (!date)     { showToast('⚠ 日付を入力してください', true); return; }
+
+  // 担当者名を解決
+  const emp = load(KEYS.emp).find(e => e.code === empCode);
+  const empName = emp ? emp.name : empCode;
+
+  const inv = load(KEYS.inv);
+  inv.push({
+    id: 'REG-' + Date.now(),
+    siteCode, empName,
+    productCode: prodCode,
+    opCode, qty, date,
+    operation: OP_MAP[opCode] || opCode
+  });
+  save(KEYS.inv, inv);
+
+  const opLabel = OP_MAP[opCode] || opCode;
+  showToast(`✓ ${opLabel}を登録しました（${prodCode} × ${qty}）`);
+  renderRecent();
+  resetForm();
+}
+
+// ── フォームリセット ───────────────────────
+function resetForm() {
+  document.getElementById('r-prod').value = '';
+  document.getElementById('r-jan').value  = '';
+  document.getElementById('r-site').value = '';
+  document.getElementById('r-emp').value  = '';
+  document.getElementById('r-qty').value  = '1';
+  document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('r-op').value = '';
+  selectedOp = '';
+  document.querySelectorAll('.op-tile').forEach(t => t.classList.remove('selected'));
+  document.getElementById('prod-preview').classList.remove('show');
+}
+
+// ── 直近の登録表示 ───────────────────────
+function renderRecent() {
+  const inv = load(KEYS.inv);
+  const recent = inv.slice(-5).reverse();
+  const el = document.getElementById('recent-list');
+  if (!recent.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px;">まだ登録がありません</div>'; return; }
+
+  const OP_BG = { '01':'#dcfce7', '02':'#fee2e2', '03':'#fff7ed', '04':'#eff6ff' };
+  const OP_FG = { '01':'#16a34a', '02':'#dc2626', '03':'#ea580c', '04':'#2563eb' };
+
+  el.innerHTML = recent.map(r => {
+    const prod = load(KEYS.prod).find(p => p.code === r.productCode);
+    const bg = OP_BG[r.opCode] || '#f3f4f6';
+    const fg = OP_FG[r.opCode] || '#6b7280';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0;">
+      <span style="display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;background:${bg};color:${fg};white-space:nowrap;">${OP_MAP[r.opCode]||r.opCode}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${prod ? prod.name : r.productCode}</div>
+        <div style="font-size:11px;color:var(--text-secondary);font-family:'DM Mono',monospace;">${r.productCode} | ${r.date} | ×${r.qty}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── トースト ─────────────────────────────
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  toast.style.background = isError ? '#dc2626' : '#1a1f2e';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
