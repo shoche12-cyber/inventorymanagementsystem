@@ -1,1 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>事業所 | 在庫管理システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f4f5f7;--sidebar-bg:#1a1f2e;--sidebar-active:#2d3550;--sidebar-text:#a0a8c0;--accent:#3b82f6;--accent-hover:#2563eb;--card-bg:#fff;--text-primary:#1e2436;--text-secondary:#6b7280;--border:#e5e7eb;--sidebar-width:220px;--btn-teal:#14b8a6;--btn-teal-h:#0d9488;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text-primary);display:flex;min-height:100vh;}
+  .sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+  .sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .sidebar-logo span{font-size:13px;font-weight:700;letter-spacing:0.08em;color:#fff;text-transform:uppercase;}
+  .sidebar-logo small{display:block;font-size:10px;color:var(--sidebar-text);margin-top:2px;}
+  .sidebar-nav{padding:16px 0;flex:1;}
+  .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#4a5270;padding:8px 20px 4px;font-weight:500;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--sidebar-text);text-decoration:none;font-size:13.5px;transition:all .18s;cursor:pointer;border-left:3px solid transparent;}
+  .nav-item:hover{background:var(--sidebar-active);color:#fff;}
+  .nav-item.active{background:var(--sidebar-active);color:#fff;border-left-color:var(--accent);font-weight:500;}
+  .nav-icon{width:18px;height:18px;opacity:.7;flex-shrink:0;}
+  .nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1;}
+  .main{margin-left:var(--sidebar-width);flex:1;display:flex;flex-direction:column;}
+  .topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;}
+  .topbar-title{font-size:15px;font-weight:600;}
+  .content{padding:24px 32px;flex:1;}
+  .card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;}
+  .card-title{font-size:13px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px 20px;}
+  .form-group{display:flex;flex-direction:column;gap:5px;}
+  .form-group label{font-size:12px;font-weight:500;color:var(--text-secondary);}
+  .form-group input{height:38px;border:1px solid var(--border);border-radius:7px;padding:0 12px;font-size:13px;font-family:inherit;background:#fafafa;outline:none;transition:border-color .15s;}
+  .form-group input:focus{border-color:var(--accent);background:#fff;}
+  .btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .btn{height:38px;padding:0 20px;border:none;border-radius:7px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent-hover);}
+  .btn-teal{background:var(--btn-teal);color:#fff;}
+  .btn-teal:hover{background:var(--btn-teal-h);}
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead tr{background:#f8f9fb;}
+  th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
+  td{padding:12px 14px;border-bottom:1px solid #f0f0f0;vertical-align:middle;}
+  tr:hover td{background:#f8fbff;}
+  .code-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);}
+  .empty-state{text-align:center;padding:48px;color:var(--text-secondary);font-size:13px;}
+  .site-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#14b8a6,#3b82f6);display:inline-flex;align-items:center;justify-content:center;margin-right:8px;flex-shrink:0;}
+  .site-icon svg{width:16px;height:16px;color:#fff;}
+  .name-cell{display:flex;align-items:center;}
+  .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500;}
+  .tag-hq{background:#f0fdf4;color:#16a34a;}
+  .tag-branch{background:#eff6ff;color:#2563eb;}
+  .tag-site{background:#fff7ed;color:#ea580c;}
+</style>
+</head>
+<body>
 
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span>在庫管理</span>
+    <small>Inventory Management System</small>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">メニュー</div>
+    <a class="nav-item" href="index.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>トップ
+    </a>
+    <a class="nav-item" href="inventory.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>在庫
+    </a>
+    <a class="nav-item" href="product.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>商品
+    </a>
+    <a class="nav-item" href="classification.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>商品分類
+    </a>
+    <a class="nav-item" href="enployee.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>担当者
+    </a>
+    <a class="nav-item active" href="site.html">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>事業所
+    </a>
+  </nav>
+</aside>
+
+<main class="main">
+  <header class="topbar"><div class="topbar-title">事業所</div></header>
+  <div class="content">
+
+    <div class="card">
+      <div class="card-title">検索・登録</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>事業所名</label>
+          <input type="text" id="s-name" placeholder="事業所名を入力" />
+        </div>
+        <div class="form-group">
+          <label>事業所コード</label>
+          <input type="text" id="s-code" placeholder="コードを入力" />
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="doSearch()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          検索
+        </button>
+        <button class="btn btn-teal" onclick="addSite()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          追加
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">事業所一覧 <span id="result-count" style="font-size:11px;color:#aaa;margin-left:8px;"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>事業所名</th>
+              <th>事業所コード</th>
+            </tr>
+          </thead>
+          <tbody id="result-body">
+            <tr><td colspan="2" class="empty-state">登録されている事業所がありません</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const KEY = 'ims_sites';
+const load = () => JSON.parse(localStorage.getItem(KEY)||'[]');
+const save = v => localStorage.setItem(KEY, JSON.stringify(v));
+
+function renderTable(data) {
+  const tbody = document.getElementById('result-body');
+  document.getElementById('result-count').textContent = data.length ? `${data.length} 件` : '';
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="2" class="empty-state">該当する事業所がありません</td></tr>'; return; }
+  tbody.innerHTML = data.map(s => `<tr>
+    <td><div class="name-cell">
+      <div class="site-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      </div>
+      ${s.name}
+    </div></td>
+    <td class="code-cell">${s.code}</td>
+  </tr>`).join('');
+}
+
+function doSearch() {
+  const name = document.getElementById('s-name').value.trim();
+  const code = document.getElementById('s-code').value.trim();
+  if (!name && !code) { renderTable(load()); return; }
+  let data = load();
+  if (name) data = data.filter(s => s.name.includes(name));
+  if (code) data = data.filter(s => s.code.includes(code));
+  renderTable(data);
+}
+
+function addSite() {
+  const name = document.getElementById('s-name').value.trim();
+  const code = document.getElementById('s-code').value.trim();
+  if (!name || !code) { alert('事業所名と事業所コードの両方を入力してください。'); return; }
+  const sites = load();
+  if (sites.find(s => s.code === code)) { alert('そのコードは既に登録されています。'); return; }
+  sites.push({ name, code });
+  save(sites);
+  document.getElementById('s-name').value = '';
+  document.getElementById('s-code').value = '';
+  alert('事業所を登録しました。');
+  renderTable(load());
+}
+
+renderTable(load());
+</script>
+</body>
+</html>
