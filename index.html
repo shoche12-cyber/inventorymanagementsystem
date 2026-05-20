@@ -385,6 +385,20 @@ function doLogin() {
   }, 400);
 }
 
+// ── 初期データ投入（初回のみ） ─────────────────────────
+(function() {
+  var emps     = JSON.parse(localStorage.getItem('ims_employees') || '[]');
+  var accounts = JSON.parse(localStorage.getItem('ims_accounts')  || '[]');
+  if (!emps.find(function(e){ return e.code === '0000'; })) {
+    emps.push({ code: '0000', name: '管理者' });
+    localStorage.setItem('ims_employees', JSON.stringify(emps));
+  }
+  if (!accounts.find(function(a){ return a.code === '0000'; })) {
+    accounts.push({ code: '0000', password: 'password-0000' });
+    localStorage.setItem('ims_accounts', JSON.stringify(accounts));
+  }
+})();
+
 // フォーカスを担当者コード欄に
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('emp-code').focus();
