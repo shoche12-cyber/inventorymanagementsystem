@@ -292,22 +292,25 @@
 
 <script>
 
-// ══ ログインガード ══════════════════════════════════════
+// ══ ログインガード（毎回ログイン方式） ══════════════════════
 (function() {
-  var sess = sessionStorage.getItem('ims_session');
-  if (!sess) {
-    // 現在のページをリダイレクト先として保存
-    sessionStorage.setItem('ims_redirect', location.pathname.split('/').pop() || 'index.html');
+  var raw = localStorage.getItem('ims_token');
+  if (!raw) {
+    // 未ログイン：リダイレクト先を保存してlogin.htmlへ
+    var page = location.pathname.split('/').pop() || 'index.html';
+    localStorage.setItem('ims_redirect', page);
     location.replace('login.html');
     return;
   }
   try {
-    var s = JSON.parse(sess);
+    var s = JSON.parse(raw);
     if (!s || !s.empCode) throw new Error();
+    // トークンを即消費（再読み込みで再ログインが必要になる）
+    localStorage.removeItem('ims_token');
     // グローバルに担当者情報を公開
     window.IMS_SESSION = s;
   } catch(e) {
-    sessionStorage.removeItem('ims_session');
+    localStorage.removeItem('ims_token');
     location.replace('login.html');
   }
 })();
@@ -338,7 +341,7 @@
 
 function imsLogout() {
   if (!confirm('ログアウトしますか？')) return;
-  sessionStorage.removeItem('ims_session');
+  localStorage.removeItem('ims_token');
   location.replace('login.html');
 }
 const KEY = 'ims_classifications';
