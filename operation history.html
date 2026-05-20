@@ -1,6 +1,30 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<script>
+// ══ ログインガード ══
+(function() {
+  var raw = localStorage.getItem('ims_token');
+  if (!raw) {
+    var page = (location.pathname.split('/').pop() || 'index.html');
+    localStorage.setItem('ims_redirect', page);
+    location.replace('login.html');
+    throw new Error('redirect');
+  }
+  try {
+    var s = JSON.parse(raw);
+    if (!s || !s.empCode) throw new Error();
+    localStorage.removeItem('ims_token');
+    window.IMS_SESSION = s;
+  } catch(e) {
+    localStorage.removeItem('ims_token');
+    var page2 = (location.pathname.split('/').pop() || 'index.html');
+    localStorage.setItem('ims_redirect', page2);
+    location.replace('login.html');
+    throw new Error('redirect');
+  }
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>操作履歴 | 在庫管理システム</title>
@@ -466,29 +490,6 @@
 
 <script>
 
-// ══ ログインガード（毎回ログイン方式） ══════════════════════
-(function() {
-  var raw = localStorage.getItem('ims_token');
-  if (!raw) {
-    // 未ログイン：リダイレクト先を保存してlogin.htmlへ
-    var page = location.pathname.split('/').pop() || 'index.html';
-    localStorage.setItem('ims_redirect', page);
-    location.replace('login.html');
-    return;
-  }
-  try {
-    var s = JSON.parse(raw);
-    if (!s || !s.empCode) throw new Error();
-    // トークンを即消費（再読み込みで再ログインが必要になる）
-    localStorage.removeItem('ims_token');
-    // グローバルに担当者情報を公開
-    window.IMS_SESSION = s;
-  } catch(e) {
-    localStorage.removeItem('ims_token');
-    location.replace('login.html');
-  }
-})();
-// ══════════════════════════════════════════════════════
 
 // ── トップバーにログインユーザー情報を表示 ──
 (function() {
