@@ -6,9 +6,8 @@
 (function() {
   var raw = localStorage.getItem('ims_token');
   if (!raw) {
-    var page = (location.pathname.split('/').pop() || 'top.html');
-    localStorage.setItem('ims_redirect', page);
-    location.replace('top.html');
+    localStorage.setItem('ims_redirect', 'operation history.html');
+    location.replace('index.html');
     throw new Error('redirect');
   }
   try {
@@ -18,9 +17,8 @@
     window.IMS_SESSION = s;
   } catch(e) {
     localStorage.removeItem('ims_token');
-    var page2 = (location.pathname.split('/').pop() || 'top.html');
-    localStorage.setItem('ims_redirect', page2);
-    location.replace('top.html');
+    localStorage.setItem('ims_redirect', 'operation history.html');
+    location.replace('index.html');
     throw new Error('redirect');
   }
 })();
