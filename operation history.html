@@ -3,50 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>担当者 | 在庫管理システム</title>
+<title>操作履歴 | 在庫管理システム</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#f4f5f7;--sidebar-bg:#1a1f2e;--sidebar-active:#2d3550;--sidebar-text:#a0a8c0;--accent:#3b82f6;--accent-hover:#2563eb;--card-bg:#fff;--text-primary:#1e2436;--text-secondary:#6b7280;--border:#e5e7eb;--sidebar-width:220px;--btn-orange:#f97316;--btn-orange-h:#ea6f0a;}
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text-primary);display:flex;min-height:100vh;}
-  .sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
-  .sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
-  .sidebar-logo span{font-size:13px;font-weight:700;letter-spacing:0.08em;color:#fff;text-transform:uppercase;}
-  .sidebar-logo small{display:block;font-size:10px;color:var(--sidebar-text);margin-top:2px;}
-  .sidebar-nav{padding:16px 0;flex:1;}
-  .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#4a5270;padding:8px 20px 4px;font-weight:500;}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--sidebar-text);text-decoration:none;font-size:13.5px;transition:all .18s;cursor:pointer;border-left:3px solid transparent;}
-  .nav-item:hover{background:var(--sidebar-active);color:#fff;}
-  .nav-item.active{background:var(--sidebar-active);color:#fff;border-left-color:var(--accent);font-weight:500;}
-  .nav-icon{width:18px;height:18px;opacity:.7;flex-shrink:0;}
-  .nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1;}
-  .main{margin-left:var(--sidebar-width);flex:1;display:flex;flex-direction:column;}
-  .topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;}
-  .topbar-title{font-size:15px;font-weight:600;}
-  .content{padding:24px 32px;flex:1;}
-  .card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;}
-  .card-title{font-size:13px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;}
-  .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px 20px;}
-  .form-group{display:flex;flex-direction:column;gap:5px;}
-  .form-group label{font-size:12px;font-weight:500;color:var(--text-secondary);}
-  .form-group input{height:38px;border:1px solid var(--border);border-radius:7px;padding:0 12px;font-size:13px;font-family:inherit;background:#fafafa;outline:none;transition:border-color .15s;}
-  .form-group input:focus{border-color:var(--accent);background:#fff;}
-  .btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
-  .btn{height:38px;padding:0 20px;border:none;border-radius:7px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
-  .btn-primary{background:var(--accent);color:#fff;}
-  .btn-primary:hover{background:var(--accent-hover);}
-  .btn-orange{background:var(--btn-orange);color:#fff;}
-  .btn-orange:hover{background:var(--btn-orange-h);}
-  .table-wrap{overflow-x:auto;}
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  thead tr{background:#f8f9fb;}
-  th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
-  td{padding:12px 14px;border-bottom:1px solid #f0f0f0;vertical-align:middle;}
-  tr:hover td{background:#f8fbff;}
-  .code-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);}
-  .empty-state{text-align:center;padding:48px;color:var(--text-secondary);font-size:13px;}
-  .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f97316,#f59e0b);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;margin-right:8px;}
-  .name-cell{display:flex;align-items:center;}
+  :root {
+    --bg: #f4f5f7;
+    --sidebar-bg: #1a1f2e;
+    --sidebar-active: #2d3550;
+    --sidebar-text: #a0a8c0;
+    --sidebar-active-text: #ffffff;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --card-bg: #ffffff;
+    --text-primary: #1e2436;
+    --text-secondary: #6b7280;
+    --border: #e5e7eb;
+    --sidebar-width: 220px;
+    --btn-green: #22c55e;
+    --btn-green-h: #16a34a;
+    --btn-orange: #f97316;
+    --btn-orange-h: #ea6f0a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text-primary); display: flex; min-height: 100vh; }
+
+  /* ── サイドバー ── */
+  .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+  .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .sidebar-logo span { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; color: #fff; text-transform: uppercase; }
+  .sidebar-logo small { display: block; font-size: 10px; color: var(--sidebar-text); margin-top: 2px; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #4a5270; padding: 8px 20px 4px; font-weight: 500; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--sidebar-text); text-decoration: none; font-size: 13.5px; font-weight: 400; transition: all 0.18s ease; cursor: pointer; border-left: 3px solid transparent; }
+  .nav-item:hover { background: var(--sidebar-active); color: #fff; }
+  .nav-item.active { background: var(--sidebar-active); color: #fff; border-left-color: var(--accent); font-weight: 500; }
+  .nav-icon { width: 18px; height: 18px; opacity: 0.7; flex-shrink: 0; }
+  .nav-item.active .nav-icon, .nav-item:hover .nav-icon { opacity: 1; }
+
+  /* ── メイン ── */
+  .main { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; }
+  .topbar { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-title { font-size: 15px; font-weight: 600; }
+  .content { padding: 24px 32px; flex: 1; }
+
+  /* ── 検索カード ── */
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; }
+
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px 20px; }
+  .form-row-wide { grid-column: 1 / -1; }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+  .form-group input, .form-group select {
+    height: 38px; border: 1px solid var(--border); border-radius: 7px;
+    padding: 0 12px; font-size: 13px; font-family: inherit; color: var(--text-primary);
+    background: #fafafa; outline: none; transition: border-color 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--accent); background: #fff; }
+
+  .date-range { display: flex; align-items: center; gap: 8px; }
+  .date-range span { font-size: 13px; color: var(--text-secondary); flex-shrink: 0; }
+  .date-range input { flex: 1; }
+
+  .suggest-wrap { position: relative; }
+  .suggest-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-radius: 7px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 50; display: none; max-height: 180px; overflow-y: auto; }
+  .suggest-list.open { display: block; }
+  .suggest-item { padding: 9px 12px; font-size: 13px; cursor: pointer; }
+  .suggest-item:hover { background: #f0f7ff; color: var(--accent); }
+
+  /* ── ボタン ── */
+  .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .btn { height: 38px; padding: 0 20px; border: none; border-radius: 7px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-success { background: var(--btn-green); color: #fff; }
+  .btn-success:hover { background: var(--btn-green-h); }
+  .btn-warning { background: var(--btn-orange); color: #fff; }
+  .btn-warning:hover { background: var(--btn-orange-h); }
+  .btn-indigo { background: #6366f1; color: #fff; }
+  .btn-indigo:hover { background: #4f46e5; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* 在庫移動モーダル専用 */
+  .transfer-arrow {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; margin: 4px 0 12px;
+    padding: 10px 14px; background: #f0f7ff; border-radius: 8px;
+    font-size: 12px; color: var(--text-secondary);
+  }
+  .transfer-arrow .site-box {
+    flex: 1; background: #fff; border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 10px; font-size: 12px;
+    font-family: 'DM Mono', monospace; color: var(--accent);
+    text-align: center; min-height: 32px; display: flex; align-items: center; justify-content: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .transfer-arrow .arrow-icon { flex-shrink: 0; color: #6366f1; }
+
+  /* ── テーブル ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: #f8f9fb; }
+  th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 11px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; color: var(--text-primary); }
+  tr:hover td { background: #f8fbff; }
+  .code-cell { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent); }
+  .img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+  .no-img { width: 40px; height: 40px; border-radius: 6px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #aaa; }
+  .empty-state { text-align: center; padding: 48px; color: var(--text-secondary); font-size: 13px; }
+
+  /* ── モーダル ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 12px; padding: 28px; width: 420px; max-width: 90vw; box-shadow: 0 12px 48px rgba(0,0,0,0.18); }
+  .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 18px; }
+  .modal .form-group { margin-bottom: 12px; }
+  .modal-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .btn-secondary { background: #f3f4f6; color: var(--text-primary); }
+  .btn-secondary:hover { background: #e5e7eb; }
+
+  /* カレンダーポップアップ */
+  .calendar-modal { width: 340px; }
+  .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .cal-nav { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-secondary); padding: 4px 8px; border-radius: 6px; }
+  .cal-nav:hover { background: var(--bg); }
+  .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-day-name { font-size: 11px; color: var(--text-secondary); text-align: center; padding: 4px; font-weight: 500; }
+  .cal-day { font-size: 13px; text-align: center; padding: 7px 4px; border-radius: 6px; cursor: pointer; transition: background 0.1s; }
+  .cal-day:hover { background: #eff6ff; color: var(--accent); }
+  .cal-day.today { font-weight: 700; color: var(--accent); }
+  .cal-day.selected { background: var(--accent); color: #fff !important; }
+  .cal-day.empty { cursor: default; }
+  .cal-day.empty:hover { background: none; }
 
   /* ═══════════════════════════════
      スマートフォン対応
@@ -169,7 +258,7 @@
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4M9 17V9m0 8h6V9m0 8V9M9 9h6"/></svg>
       在庫
     </a>
-    <a class="nav-item" href="operation history.html">
+    <a class="nav-item active" href="operation history.html">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       操作履歴
     </a>
@@ -185,7 +274,7 @@
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
       商品分類
     </a>
-    <a class="nav-item active" href="enployee.html">
+    <a class="nav-item" href="enployee.html">
       <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       担当者
     </a>
@@ -197,19 +286,47 @@
 </aside>
 
 <main class="main">
-  <header class="topbar"><div class="topbar-title">担当者</div></header>
-  <div class="content">
+  <header class="topbar">
+    <div class="topbar-title">操作履歴</div>
+  </header>
 
+  <div class="content">
+    <!-- 検索条件 -->
     <div class="card">
-      <div class="card-title">検索・登録</div>
+      <div class="card-title">検索条件</div>
       <div class="form-grid">
-        <div class="form-group">
-          <label>担当者名</label>
-          <input type="text" id="s-name" placeholder="名前を入力" />
+        <div class="form-group form-row-wide">
+          <label>検索期間</label>
+          <div class="date-range">
+            <input type="date" id="s-from" />
+            <span>〜</span>
+            <input type="date" id="s-to" />
+          </div>
         </div>
         <div class="form-group">
-          <label>担当者コード</label>
-          <input type="text" id="s-code" placeholder="コードを入力" />
+          <label>事業所コード</label>
+          <input type="text" id="s-site" placeholder="コードを入力" />
+        </div>
+        <div class="form-group">
+          <label>担当者名</label>
+          <div class="suggest-wrap">
+            <input type="text" id="s-emp" placeholder="名前を入力" autocomplete="off" oninput="empSuggest(this.value)" />
+            <div class="suggest-list" id="emp-suggest"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>商品コード</label>
+          <input type="text" id="s-prod" placeholder="コードを入力" />
+        </div>
+        <div class="form-group">
+          <label>操作コード</label>
+          <select id="s-op">
+            <option value="">すべて</option>
+            <option value="01">01 - 入庫</option>
+            <option value="02">02 - 出庫</option>
+            <option value="03">03 - 持ち出し</option>
+            <option value="04">04 - 返却</option>
+          </select>
         </div>
       </div>
       <div class="btn-row">
@@ -217,25 +334,41 @@
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           検索
         </button>
-        <button class="btn btn-orange" onclick="addEmployee()">
+        <button class="btn btn-success" onclick="openRegModal()">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          追加
+          操作登録
+        </button>
+        <button class="btn btn-indigo" onclick="openTransferModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          在庫移動
+        </button>
+        <button class="btn btn-warning" id="export-btn" disabled onclick="exportExcel()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          帳票出力
         </button>
       </div>
     </div>
 
+    <!-- 結果テーブル -->
     <div class="card">
-      <div class="card-title">担当者一覧 <span id="result-count" style="font-size:11px;color:#aaa;margin-left:8px;"></span></div>
+      <div class="card-title">操作履歴一覧 <span id="result-count" style="font-size:11px;color:#aaa;margin-left:8px;"></span></div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>担当者名</th>
-              <th>担当者コード</th>
+              <th>操作コード</th>
+              <th>事業所</th>
+              <th>商品コード</th>
+              <th>商品名</th>
+              <th>商品画像</th>
+              <th>分類</th>
+              <th>日付</th>
+              <th>操作</th>
+              <th>数量</th>
             </tr>
           </thead>
           <tbody id="result-body">
-            <tr><td colspan="2" class="empty-state">登録されている担当者がありません</td></tr>
+            <tr><td colspan="9" class="empty-state">検索条件を入力して「検索」をクリックしてください</td></tr>
           </tbody>
         </table>
       </div>
@@ -243,24 +376,115 @@
   </div>
 </main>
 
+<!-- 操作登録モーダル -->
+<div class="modal-overlay" id="reg-modal">
+  <div class="modal">
+    <h3>操作登録</h3>
+    <div class="form-group">
+      <label>事業所コード</label>
+      <input type="text" id="r-site" placeholder="コードを入力" />
+    </div>
+    <div class="form-group">
+      <label>担当者 <span style="font-size:10px;color:#22c55e;font-weight:600;" id="r-emp-label">● ログイン中</span></label>
+      <input type="text" id="r-emp" readonly
+        style="background:#f0fdf4;border-color:#bbf7d0;color:#15803d;font-weight:600;cursor:default;" />
+    </div>
+    <div class="form-group">
+      <label>商品コード</label>
+      <input type="text" id="r-prod" placeholder="コードを入力" />
+    </div>
+    <div class="form-group">
+      <label>操作コード</label>
+      <select id="r-op">
+        <option value="">選択してください</option>
+        <option value="01">01 - 入庫</option>
+        <option value="02">02 - 出庫</option>
+        <option value="03">03 - 持ち出し</option>
+        <option value="04">04 - 返却</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>数量</label>
+      <input type="number" id="r-qty" placeholder="数量を入力" min="1" />
+    </div>
+    <div class="form-group">
+      <label>日付</label>
+      <input type="date" id="r-date" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal('reg-modal')">キャンセル</button>
+      <button class="btn btn-success" onclick="registerOp()">登録</button>
+    </div>
+  </div>
+</div>
+
+<!-- 在庫移動モーダル -->
+<div class="modal-overlay" id="transfer-modal">
+  <div class="modal">
+    <h3>在庫移動</h3>
+
+    <div class="form-group">
+      <label>日付</label>
+      <input type="date" id="t-date" />
+    </div>
+    <div class="form-group">
+      <label>商品コード</label>
+      <input type="text" id="t-prod" placeholder="コードを入力" oninput="updateTransferPreview()" />
+    </div>
+    <div class="form-group">
+      <label>担当者 <span style="font-size:10px;color:#22c55e;font-weight:600;" id="t-emp-label">● ログイン中</span></label>
+      <input type="text" id="t-emp" readonly
+        style="background:#f0fdf4;border-color:#bbf7d0;color:#15803d;font-weight:600;cursor:default;" />
+    </div>
+
+    <!-- 移動元 → 移動先 ビジュアル -->
+    <div class="form-group">
+      <label>移動元事業所コード</label>
+      <input type="text" id="t-from" placeholder="コードを入力" oninput="updateTransferPreview()" />
+    </div>
+    <div class="transfer-arrow" id="transfer-preview">
+      <div class="site-box" id="t-from-label">移動元</div>
+      <svg class="arrow-icon" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      <div class="site-box" id="t-to-label">移動先</div>
+    </div>
+    <div class="form-group">
+      <label>移動先事業所コード</label>
+      <input type="text" id="t-to" placeholder="コードを入力" oninput="updateTransferPreview()" />
+    </div>
+
+    <div class="form-group">
+      <label>個数</label>
+      <input type="number" id="t-qty" placeholder="個数を入力" min="1" />
+    </div>
+
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal('transfer-modal')">キャンセル</button>
+      <button class="btn btn-indigo" onclick="registerTransfer()">移動登録</button>
+    </div>
+  </div>
+</div>
+
 <script>
 
-// ══ ログインガード ══════════════════════════════════════
+// ══ ログインガード（毎回ログイン方式） ══════════════════════
 (function() {
-  var sess = sessionStorage.getItem('ims_session');
-  if (!sess) {
-    // 現在のページをリダイレクト先として保存
-    sessionStorage.setItem('ims_redirect', location.pathname.split('/').pop() || 'index.html');
+  var raw = localStorage.getItem('ims_token');
+  if (!raw) {
+    // 未ログイン：リダイレクト先を保存してlogin.htmlへ
+    var page = location.pathname.split('/').pop() || 'index.html';
+    localStorage.setItem('ims_redirect', page);
     location.replace('login.html');
     return;
   }
   try {
-    var s = JSON.parse(sess);
+    var s = JSON.parse(raw);
     if (!s || !s.empCode) throw new Error();
+    // トークンを即消費（再読み込みで再ログインが必要になる）
+    localStorage.removeItem('ims_token');
     // グローバルに担当者情報を公開
     window.IMS_SESSION = s;
   } catch(e) {
-    sessionStorage.removeItem('ims_session');
+    localStorage.removeItem('ims_token');
     location.replace('login.html');
   }
 })();
@@ -291,66 +515,263 @@
 
 function imsLogout() {
   if (!confirm('ログアウトしますか？')) return;
-  sessionStorage.removeItem('ims_session');
+  localStorage.removeItem('ims_token');
   location.replace('login.html');
 }
-const KEY = 'ims_employees';
-const load = () => JSON.parse(localStorage.getItem(KEY)||'[]');
-const save = v => localStorage.setItem(KEY, JSON.stringify(v));
+const KEYS = { inv: 'ims_inventory', prod: 'ims_products', emp: 'ims_employees', site: 'ims_sites', cls: 'ims_classifications' };
+const load = k => JSON.parse(localStorage.getItem(k) || '[]');
+const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
-function getInitial(name) { return name ? name.charAt(0) : '?'; }
+// 操作コード定義
+const OP_MAP = { '01': '入庫', '02': '出庫', '03': '持ち出し', '04': '返却' };
+const OP_COLOR = { '01': '#dcfce7|#16a34a', '02': '#fee2e2|#dc2626', '03': '#fff7ed|#ea580c', '04': '#eff6ff|#2563eb' };
+function opBadge(code) {
+  const label = OP_MAP[code] || code;
+  const colors = OP_COLOR[code] ? OP_COLOR[code].split('|') : ['#f3f4f6','#6b7280'];
+  return `<span style="display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;background:${colors[0]};color:${colors[1]};">${code} ${label}</span>`;
+}
+
+// 担当者サジェスト
+function empSuggest(val) {
+  const box = document.getElementById('emp-suggest');
+  if (!val.trim()) { box.classList.remove('open'); return; }
+  const emps = load(KEYS.emp).filter(e => e.name.includes(val));
+  if (!emps.length) { box.classList.remove('open'); return; }
+  box.innerHTML = emps.map(e => `<div class="suggest-item" onclick="selectEmp('${e.name}')">${e.name}（${e.code}）</div>`).join('');
+  box.classList.add('open');
+}
+function selectEmp(name) {
+  document.getElementById('s-emp').value = name;
+  document.getElementById('emp-suggest').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.suggest-wrap')) document.getElementById('emp-suggest').classList.remove('open');
+});
+
+// 検索
+let lastResults = [];
+function doSearch() {
+  const from  = document.getElementById('s-from').value;
+  const to    = document.getElementById('s-to').value;
+  const site  = document.getElementById('s-site').value.trim();
+  const emp   = document.getElementById('s-emp').value.trim();
+  const prod  = document.getElementById('s-prod').value.trim();
+  const op    = document.getElementById('s-op').value.trim();
+
+  const hasDate = from || to;
+  const hasSite = !!site, hasEmp = !!emp, hasProd = !!prod, hasOp = !!op;
+
+  // 少なくとも1つ入力が必要
+  if (!hasDate && !hasSite && !hasEmp && !hasProd && !hasOp) {
+    alert('検索条件を1つ以上入力してください。'); return;
+  }
+
+  let data = load(KEYS.inv);
+  const products = load(KEYS.prod);
+  const sites    = load(KEYS.site);
+  const clsData  = load(KEYS.cls);
+
+  if (hasSite) data = data.filter(r => r.siteCode === site);
+  if (hasEmp)  data = data.filter(r => r.empName === emp);
+  if (hasProd) data = data.filter(r => r.productCode === prod);
+  if (hasOp)   data = data.filter(r => r.opCode === op);
+  if (from)    data = data.filter(r => r.date >= from);
+  if (to)      data = data.filter(r => r.date <= to);
+
+  lastResults = data;
+  renderTable(data, products, sites, clsData);
+  document.getElementById('export-btn').disabled = data.length === 0;
+}
+
+function getSiteName(code) {
+  const s = load(KEYS.site).find(x => x.code === code);
+  return s ? `${s.name}（${code}）` : code;
+}
+function getProductInfo(code) {
+  return load(KEYS.prod).find(x => x.code === code) || null;
+}
+function getClassName(clsCode) {
+  const clsData = load(KEYS.cls);
+  for (const c of clsData) {
+    const sub = c.subs && c.subs.find(s => s.code === clsCode);
+    if (sub) return `${c.name} > ${sub.name}`;
+  }
+  return clsCode || '—';
+}
 
 function renderTable(data) {
   const tbody = document.getElementById('result-body');
-  document.getElementById('result-count').textContent = data.length ? `${data.length} 名` : '';
-  if (!data.length) { tbody.innerHTML = '<tr><td colspan="2" class="empty-state">該当する担当者がいません</td></tr>'; return; }
-  tbody.innerHTML = data.map(e => `<tr>
-    <td><div class="name-cell"><div class="avatar">${getInitial(e.name)}</div>${e.name}</div></td>
-    <td class="code-cell">${e.code}</td>
-  </tr>`).join('');
+  document.getElementById('result-count').textContent = data.length ? `${data.length} 件` : '';
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">該当するデータがありません</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(r => {
+    const p = getProductInfo(r.productCode);
+    const imgHtml = p && p.image
+      ? `<img class="img-thumb" src="${p.image}" alt="${p.name}">`
+      : `<div class="no-img">NO IMG</div>`;
+    const cls = p ? getClassName(p.classification) : '—';
+    return `<tr>
+      <td>${opBadge(r.opCode)}</td>
+      <td>${getSiteName(r.siteCode)}</td>
+      <td class="code-cell">${r.productCode}</td>
+      <td>${p ? p.name : r.productCode}</td>
+      <td>${imgHtml}</td>
+      <td>${cls}</td>
+      <td>${r.date}</td>
+      <td>${OP_MAP[r.opCode] || r.opCode}</td>
+      <td style="font-family:'DM Mono',monospace;">${r.qty}</td>
+    </tr>`;
+  }).join('');
 }
 
-function doSearch() {
-  const name = document.getElementById('s-name').value.trim();
-  const code = document.getElementById('s-code').value.trim();
-  if (!name && !code) { renderTable(load()); return; }
-  let data = load();
-  if (name) data = data.filter(e => e.name.includes(name));
-  if (code) data = data.filter(e => e.code.includes(code));
-  renderTable(data);
+// 操作登録モーダル
+function openRegModal() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('r-date').value = today;
+  // セッションから担当者を自動セット
+  if (window.IMS_SESSION) {
+    document.getElementById('r-emp').value = window.IMS_SESSION.empName || window.IMS_SESSION.empCode;
+    const label = document.getElementById('r-emp-label');
+    if (label) label.textContent = '● ' + (window.IMS_SESSION.empName || '') + '（' + window.IMS_SESSION.empCode + '）';
+  }
+  document.getElementById('reg-modal').classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function registerOp() {
+  const siteCode    = document.getElementById('r-site').value.trim();
+  const productCode = document.getElementById('r-prod').value.trim();
+  const opCode      = document.getElementById('r-op').value;
+  const qty         = document.getElementById('r-qty').value;
+  const date        = document.getElementById('r-date').value;
+  // 担当者はセッションから自動取得
+  const empName     = window.IMS_SESSION ? (window.IMS_SESSION.empName || window.IMS_SESSION.empCode) : '';
+
+  if (!siteCode || !productCode || !opCode || !qty || !date) {
+    alert('すべての項目を入力してください。'); return;
+  }
+  if (!empName) {
+    alert('セッションが切れています。再ログインしてください。'); return;
+  }
+  const inv = load(KEYS.inv);
+  const id  = 'INV' + Date.now();
+  inv.push({ id, siteCode, empName, productCode, opCode, qty: parseInt(qty), date, operation: OP_MAP[opCode] || opCode });
+  save(KEYS.inv, inv);
+  closeModal('reg-modal');
+  ['r-site','r-prod','r-qty'].forEach(x => document.getElementById(x).value = '');
+  document.getElementById('r-op').value = '';
+  alert('登録しました。');
 }
 
-function addEmployee() {
-  const name = document.getElementById('s-name').value.trim();
-  const code = document.getElementById('s-code').value.trim();
-  if (!name || !code) { alert('担当者名と担当者コードの両方を入力してください。'); return; }
-  const emps = load();
-  if (emps.find(e => e.code === code)) { alert('そのコードは既に登録されています。'); return; }
+// 帳票出力（CSV簡易出力）
+function exportExcel() {
+  if (!lastResults.length) return;
+  const header = ['操作コード','操作名','事業所','商品コード','日付','数量'];
+  const rows = lastResults.map(r => [
+    r.opCode, OP_MAP[r.opCode] || r.opCode, getSiteName(r.siteCode), r.productCode, r.date, r.qty
+  ]);
+  let csv = header.join(',') + '\n' + rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], {type: 'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '在庫帳票_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+}
 
-  // 担当者データに追加
-  emps.push({ name, code });
-  save(emps);
+// ── 在庫移動 ──────────────────────────────
+function openTransferModal() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('t-date').value = today;
+  ['t-prod','t-from','t-to','t-qty'].forEach(id => document.getElementById(id).value = '');
+  // セッションから担当者を自動セット
+  if (window.IMS_SESSION) {
+    document.getElementById('t-emp').value = window.IMS_SESSION.empCode;
+    const label = document.getElementById('t-emp-label');
+    if (label) label.textContent = '● ' + (window.IMS_SESSION.empName || '') + '（' + window.IMS_SESSION.empCode + '）';
+  }
+  updateTransferPreview();
+  document.getElementById('transfer-modal').classList.add('open');
+}
 
-  // アカウント（ログイン情報）を自動生成
-  // パスワードは "password-担当者コード" 形式
-  const accounts = JSON.parse(localStorage.getItem('ims_accounts') || '[]');
-  if (!accounts.find(a => a.code === code)) {
-    accounts.push({ code, password: 'password-' + code });
-    localStorage.setItem('ims_accounts', JSON.stringify(accounts));
+// 移動元・移動先のプレビュー表示を更新
+function updateTransferPreview() {
+  const sites   = load(KEYS.site);
+  const fromCode = document.getElementById('t-from').value.trim();
+  const toCode   = document.getElementById('t-to').value.trim();
+  const prodCode = document.getElementById('t-prod').value.trim();
+
+  const fromSite = sites.find(s => s.code === fromCode);
+  const toSite   = sites.find(s => s.code === toCode);
+
+  document.getElementById('t-from-label').textContent =
+    fromCode ? (fromSite ? `${fromSite.name} (${fromCode})` : fromCode) : '移動元';
+  document.getElementById('t-to-label').textContent =
+    toCode   ? (toSite   ? `${toSite.name} (${toCode})`     : toCode)   : '移動先';
+}
+
+function registerTransfer() {
+  const date     = document.getElementById('t-date').value;
+  const prodCode = document.getElementById('t-prod').value.trim();
+  // 担当者コードはセッションから自動取得
+  const empCode  = window.IMS_SESSION ? window.IMS_SESSION.empCode : '';
+  const fromCode = document.getElementById('t-from').value.trim();
+  const toCode   = document.getElementById('t-to').value.trim();
+  const qty      = parseInt(document.getElementById('t-qty').value);
+
+  // バリデーション
+  if (!empCode) {
+    alert('セッションが切れています。再ログインしてください。'); return;
+  }
+  if (!date || !prodCode || !fromCode || !toCode || !qty || qty < 1) {
+    alert('すべての項目を正しく入力してください。'); return;
+  }
+  if (fromCode === toCode) {
+    alert('移動元と移動先に同じ事業所コードは指定できません。'); return;
   }
 
-  document.getElementById('s-name').value = '';
-  document.getElementById('s-code').value = '';
-  alert('担当者「' + name + '」を登録しました。
-アカウントが自動作成されました。');
-  renderTable(load());
-}
+  // 担当者コードから担当者名を取得（なければコードをそのまま使用）
+  const emp = load(KEYS.emp).find(e => e.code === empCode);
+  const empName = emp ? emp.name : empCode;
 
-renderTable(load());
+  const inv = load(KEYS.inv);
+  const now = Date.now();
+
+  // 移動元：出庫（02）として記録
+  inv.push({
+    id: 'TRF-OUT-' + now,
+    siteCode: fromCode,
+    empName,
+    productCode: prodCode,
+    opCode: '02',
+    qty,
+    date,
+    operation: '出庫',
+    transferNote: `在庫移動 → ${toCode}`
+  });
+
+  // 移動先：入庫（01）として記録
+  inv.push({
+    id: 'TRF-IN-' + now,
+    siteCode: toCode,
+    empName,
+    productCode: prodCode,
+    opCode: '01',
+    qty,
+    date,
+    operation: '入庫',
+    transferNote: `在庫移動 ← ${fromCode}`
+  });
+
+  save(KEYS.inv, inv);
+  closeModal('transfer-modal');
+  alert(`在庫移動を登録しました。\n${getSiteName(fromCode)} → ${getSiteName(toCode)}\n商品：${prodCode}　個数：${qty}`);
+}
 </script>
 
 <nav class="bottom-nav">
-  <a class="bottom-nav-item" href="registration.html">
+  <a class="bottom-nav-item active" href="registration.html">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
     登録
     <span class="nav-dot"></span>
@@ -365,7 +786,7 @@ renderTable(load());
     商品
     <span class="nav-dot"></span>
   </a>
-  <a class="bottom-nav-item active" href="site.html">
+  <a class="bottom-nav-item" href="site.html">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
     事業所
     <span class="nav-dot"></span>
