@@ -4,7 +4,7 @@
 <script>
 // ══ ログインガード ══
 (function() {
-  var raw = localStorage.getItem('ims_token');
+  var raw = sessionStorage.getItem('ims_session');
   if (!raw) {
     localStorage.setItem('ims_redirect', 'top.html');
     location.replace('index.html');
@@ -13,10 +13,10 @@
   try {
     var s = JSON.parse(raw);
     if (!s || !s.empCode) throw new Error();
-    localStorage.removeItem('ims_token');
+    // セッションは消費しない（タブ内遷移では維持）
     window.IMS_SESSION = s;
   } catch(e) {
-    localStorage.removeItem('ims_token');
+    sessionStorage.removeItem('ims_session');
     localStorage.setItem('ims_redirect', 'top.html');
     location.replace('index.html');
     throw new Error('redirect');
@@ -564,8 +564,8 @@
 
 function imsLogout() {
   if (!confirm('ログアウトしますか？')) return;
-  localStorage.removeItem('ims_token');
-  location.replace('top.html');
+  sessionStorage.removeItem('ims_session');
+  location.replace('index.html');
 }
   // 共通データストア（localStorage）
   function loadStats() {
