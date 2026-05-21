@@ -452,30 +452,6 @@
       <p>管理メニューを選択してください</p>
     </div>
 
-    <!-- サマリー -->
-    <div class="summary-bar">
-      <div class="stat-card">
-        <div class="label">登録商品数</div>
-        <div class="value" id="stat-products">—</div>
-        <div class="sub">件</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">担当者数</div>
-        <div class="value" id="stat-employees">—</div>
-        <div class="sub">名</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">事業所数</div>
-        <div class="value" id="stat-sites">—</div>
-        <div class="sub">拠点</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">在庫操作数</div>
-        <div class="value" id="stat-inventory">—</div>
-        <div class="sub">件</div>
-      </div>
-    </div>
-
     <!-- メニューカード -->
     <div class="menu-grid">
       <a class="menu-card" href="inventory.html">
@@ -581,17 +557,6 @@ function imsLogout() {
   location.replace('index.html');
 }
   // 共通データストア（localStorage）
-  function loadStats() {
-    const products   = JSON.parse(localStorage.getItem('ims_products')   || '[]');
-    const employees  = JSON.parse(localStorage.getItem('ims_employees')  || '[]');
-    const sites      = JSON.parse(localStorage.getItem('ims_sites')      || '[]');
-    const inventory  = JSON.parse(localStorage.getItem('ims_inventory')  || '[]');
-    document.getElementById('stat-products').textContent   = products.length;
-    document.getElementById('stat-employees').textContent  = employees.length;
-    document.getElementById('stat-sites').textContent      = sites.length;
-    document.getElementById('stat-inventory').textContent  = inventory.length;
-  }
-  loadStats();
 
   const now = new Date();
   document.getElementById('current-date').textContent =
