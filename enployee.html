@@ -14,7 +14,6 @@
   try {
     var s = JSON.parse(raw);
     if (!s || !s.empCode) throw new Error();
-    // セッションは消費しない（タブ内遷移では維持）
     window.IMS_SESSION = s;
   } catch(e) {
     sessionStorage.removeItem('ims_session');
@@ -24,154 +23,93 @@
   }
 })();
 </script>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>担当者 | 在庫管理システム</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#f4f5f7;--sidebar-bg:#1a1f2e;--sidebar-active:#2d3550;--sidebar-text:#a0a8c0;--accent:#3b82f6;--accent-hover:#2563eb;--card-bg:#fff;--text-primary:#1e2436;--text-secondary:#6b7280;--border:#e5e7eb;--sidebar-width:220px;--btn-orange:#f97316;--btn-orange-h:#ea6f0a;}
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text-primary);display:flex;min-height:100vh;}
-  .sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
-  .sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
-  .sidebar-logo span{font-size:13px;font-weight:700;letter-spacing:0.08em;color:#fff;text-transform:uppercase;}
-  .sidebar-logo small{display:block;font-size:10px;color:var(--sidebar-text);margin-top:2px;}
-  .sidebar-nav{padding:16px 0;flex:1;}
-  .nav-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#4a5270;padding:8px 20px 4px;font-weight:500;}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--sidebar-text);text-decoration:none;font-size:13.5px;transition:all .18s;cursor:pointer;border-left:3px solid transparent;}
-  .nav-item:hover{background:var(--sidebar-active);color:#fff;}
-  .nav-item.active{background:var(--sidebar-active);color:#fff;border-left-color:var(--accent);font-weight:500;}
-  .nav-icon{width:18px;height:18px;opacity:.7;flex-shrink:0;}
-  .nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1;}
-  .main{margin-left:var(--sidebar-width);flex:1;display:flex;flex-direction:column;}
-  .topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;}
-  .topbar-title{font-size:15px;font-weight:600;}
-  .content{padding:24px 32px;flex:1;}
-  .card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;}
-  .card-title{font-size:13px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;}
-  .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px 20px;}
-  .form-group{display:flex;flex-direction:column;gap:5px;}
-  .form-group label{font-size:12px;font-weight:500;color:var(--text-secondary);}
-  .form-group input{height:38px;border:1px solid var(--border);border-radius:7px;padding:0 12px;font-size:13px;font-family:inherit;background:#fafafa;outline:none;transition:border-color .15s;}
-  .form-group input:focus{border-color:var(--accent);background:#fff;}
-  .btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
-  .btn{height:38px;padding:0 20px;border:none;border-radius:7px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
-  .btn-primary{background:var(--accent);color:#fff;}
-  .btn-primary:hover{background:var(--accent-hover);}
-  .btn-orange{background:var(--btn-orange);color:#fff;}
-  .btn-orange:hover{background:var(--btn-orange-h);}
-  .table-wrap{overflow-x:auto;}
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  thead tr{background:#f8f9fb;}
-  th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
-  td{padding:12px 14px;border-bottom:1px solid #f0f0f0;vertical-align:middle;}
-  tr:hover td{background:#f8fbff;}
-  .code-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);}
-  .empty-state{text-align:center;padding:48px;color:var(--text-secondary);font-size:13px;}
-  .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f97316,#f59e0b);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;margin-right:8px;}
-  .name-cell{display:flex;align-items:center;}
-
-  /* ═══════════════════════════════
-     スマートフォン対応
-  ═══════════════════════════════ */
-  @media (max-width: 768px) {
-    /* サイドバー非表示 */
-    .sidebar { display: none; }
-
-    /* メインを全幅に */
-    .main { margin-left: 0; }
-
-    /* トップバー */
-    .topbar { padding: 0 16px; }
-
-    /* コンテンツ余白調整・下部ナビ分の余白 */
-    .content { padding: 16px; padding-bottom: 88px; }
-
-    /* カードのパディング縮小 */
-    .card { padding: 16px; }
-
-    /* フォームグリッドを1列 */
-    .form-grid { grid-template-columns: 1fr; }
-    .form-row-wide { grid-column: 1; }
-
-    /* テーブルフォントサイズ */
-    table { font-size: 12px; }
-    th, td { padding: 8px 8px; }
-
-    /* メニューグリッド（トップページ） */
-    .menu-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-    .menu-card { padding: 16px 12px; gap: 10px; }
-    .menu-card-icon { width: 40px; height: 40px; }
-    .menu-card-info h3 { font-size: 13px; }
-    .menu-card-info p { font-size: 11px; }
-
-    /* サマリーバー */
-    .summary-bar { grid-template-columns: 1fr 1fr; }
-    .summary-strip { gap: 8px; }
-    .summary-chip { min-width: 0; flex: 1; padding: 8px 12px; }
+  :root {
+    --bg: #f4f5f7;
+    --sidebar-bg: #1a1f2e;
+    --sidebar-active: #2d3550;
+    --sidebar-text: #a0a8c0;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --card-bg: #fff;
+    --text-primary: #1e2436;
+    --text-secondary: #6b7280;
+    --border: #e5e7eb;
+    --sidebar-width: 220px;
+    --btn-orange: #f97316;
+    --btn-orange-h: #ea6f0a;
   }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text-primary); display: flex; min-height: 100vh; }
 
-  /* ══════════════ 下部タブナビ ══════════════ */
-  .bottom-nav {
-    display: none; /* PCでは非表示 */
-  }
-  @media (max-width: 768px) {
-    .bottom-nav {
-      display: flex;
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      height: 64px;
-      background: #1a1f2e;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      z-index: 200;
-      padding: 0;
-    }
-    .bottom-nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      color: #6b7a9f;
-      text-decoration: none;
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.02em;
-      padding: 8px 4px;
-      transition: color 0.15s;
-      cursor: pointer;
-      border: none;
-      background: none;
-      font-family: inherit;
-    }
-    .bottom-nav-item svg {
-      width: 22px;
-      height: 22px;
-    }
-    .bottom-nav-item.active {
-      color: #60a5fa;
-    }
-    .bottom-nav-item:hover {
-      color: #93c5fd;
-    }
-    .bottom-nav-item .nav-dot {
-      display: none;
-    }
-    .bottom-nav-item.active .nav-dot {
-      display: block;
-      width: 4px; height: 4px;
-      border-radius: 50%;
-      background: #60a5fa;
-      margin-top: -2px;
-    }
-  }
-
-
-  /* 登録タブ：PCでは非表示、スマホのみ表示 */
+  .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+  .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .sidebar-logo span { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; color: #fff; text-transform: uppercase; }
+  .sidebar-logo small { display: block; font-size: 10px; color: var(--sidebar-text); margin-top: 2px; }
+  .sidebar-nav { padding: 16px 0; flex: 1; }
+  .nav-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #4a5270; padding: 8px 20px 4px; font-weight: 500; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--sidebar-text); text-decoration: none; font-size: 13.5px; transition: all 0.18s; cursor: pointer; border-left: 3px solid transparent; }
+  .nav-item:hover { background: var(--sidebar-active); color: #fff; }
+  .nav-item.active { background: var(--sidebar-active); color: #fff; border-left-color: var(--accent); font-weight: 500; }
+  .nav-icon { width: 18px; height: 18px; opacity: 0.7; flex-shrink: 0; }
+  .nav-item.active .nav-icon, .nav-item:hover .nav-icon { opacity: 1; }
   .nav-item.mobile-only { display: none; }
+
+  .main { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; }
+  .topbar { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; }
+  .topbar-title { font-size: 15px; font-weight: 600; }
+  .content { padding: 24px 32px; flex: 1; }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; }
+
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px 20px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+  .form-group input { height: 38px; border: 1px solid var(--border); border-radius: 7px; padding: 0 12px; font-size: 13px; font-family: inherit; background: #fafafa; outline: none; transition: border-color 0.15s; }
+  .form-group input:focus { border-color: var(--accent); background: #fff; }
+
+  .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .btn { height: 38px; padding: 0 20px; border: none; border-radius: 7px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-orange { background: var(--btn-orange); color: #fff; }
+  .btn-orange:hover { background: var(--btn-orange-h); }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: #f8f9fb; }
+  th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  tr:hover td { background: #f8fbff; }
+  .code-cell { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent); }
+  .empty-state { text-align: center; padding: 48px; color: var(--text-secondary); font-size: 13px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #f97316, #f59e0b); display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; margin-right: 8px; flex-shrink: 0; }
+  .name-cell { display: flex; align-items: center; }
+
   @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .topbar { padding: 0 16px; }
+    .content { padding: 16px; padding-bottom: 88px; }
+    .card { padding: 16px; }
+    .form-grid { grid-template-columns: 1fr; }
+    table { font-size: 12px; }
+    th, td { padding: 8px; }
     .nav-item.mobile-only { display: flex; }
+  }
+
+  .bottom-nav { display: none; }
+  @media (max-width: 768px) {
+    .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: #1a1f2e; border-top: 1px solid rgba(255,255,255,0.08); z-index: 200; }
+    .bottom-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #6b7a9f; text-decoration: none; font-size: 10px; font-weight: 500; padding: 8px 4px; transition: color 0.15s; border: none; background: none; font-family: inherit; cursor: pointer; }
+    .bottom-nav-item svg { width: 22px; height: 22px; }
+    .bottom-nav-item.active { color: #60a5fa; }
+    .bottom-nav-item .nav-dot { display: none; }
+    .bottom-nav-item.active .nav-dot { display: block; width: 4px; height: 4px; border-radius: 50%; background: #60a5fa; margin-top: -2px; }
   }
 </style>
 </head>
@@ -220,9 +158,12 @@
 </aside>
 
 <main class="main">
-  <header class="topbar"><div class="topbar-title">担当者</div></header>
-  <div class="content">
+  <header class="topbar">
+    <div class="topbar-title">担当者</div>
+    <div id="topbar-user-area" style="display:flex;align-items:center;gap:10px;margin-left:auto;"></div>
+  </header>
 
+  <div class="content">
     <div class="card">
       <div class="card-title">検索・登録</div>
       <div class="form-grid">
@@ -236,11 +177,11 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="doSearch()">
+        <button class="btn btn-primary" id="btn-search">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           検索
         </button>
-        <button class="btn btn-orange" onclick="addEmployee()">
+        <button class="btn btn-orange" id="btn-add">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           追加
         </button>
@@ -266,126 +207,136 @@
   </div>
 </main>
 
+<nav class="bottom-nav">
+  <a class="bottom-nav-item" href="registration.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    登録<span class="nav-dot"></span>
+  </a>
+  <a class="bottom-nav-item" href="inventory.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4M9 17V9m0 8h6V9m0 8V9M9 9h6"/></svg>
+    在庫<span class="nav-dot"></span>
+  </a>
+  <a class="bottom-nav-item" href="product.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+    商品<span class="nav-dot"></span>
+  </a>
+  <a class="bottom-nav-item active" href="site.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+    事業所<span class="nav-dot"></span>
+  </a>
+</nav>
+
 <script>
-
-
-// ── トップバーにログインユーザー情報を表示 ──
-(function() {
-  function injectUserInfo() {
-    var topbar = document.querySelector('.topbar');
-    if (!topbar || !window.IMS_SESSION) return;
-    if (topbar.querySelector('.topbar-user')) return;
-
-    var wrap = document.createElement('div');
-    wrap.className = 'topbar-user';
-    wrap.style.cssText = 'display:flex;align-items:center;gap:10px;margin-left:auto;';
-
-    var nameSpan = document.createElement('span');
-    nameSpan.style.cssText = 'font-size:12px;color:var(--text-secondary);';
-    var bold = document.createElement('span');
-    bold.style.cssText = 'font-weight:600;color:var(--text-primary);';
-    bold.textContent = window.IMS_SESSION.empName || window.IMS_SESSION.empCode;
-    var code = document.createElement('span');
-    code.style.cssText = 'margin-left:6px;font-family:DM Mono,monospace;font-size:11px;color:#aaa;';
-    code.textContent = '(' + window.IMS_SESSION.empCode + ')';
-    nameSpan.appendChild(bold);
-    nameSpan.appendChild(code);
-
-    var btn = document.createElement('button');
-    btn.textContent = 'ログアウト';
-    btn.style.cssText = 'height:30px;padding:0 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;font-size:11px;font-weight:500;color:#6b7280;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px;transition:all .15s;';
-    btn.addEventListener('mouseover', function() { this.style.borderColor='#ef4444'; this.style.color='#ef4444'; });
-    btn.addEventListener('mouseout',  function() { this.style.borderColor='#e5e7eb'; this.style.color='#6b7280'; });
-    btn.addEventListener('click', imsLogout);
-
-    wrap.appendChild(nameSpan);
-    wrap.appendChild(btn);
-    topbar.appendChild(wrap);
-  }
-  document.addEventListener('DOMContentLoaded', injectUserInfo);
-})();
-
+// ── ログアウト ──
 function imsLogout() {
   if (!confirm('ログアウトしますか？')) return;
   sessionStorage.removeItem('ims_session');
   location.replace('index.html');
 }
-const KEY = 'ims_employees';
-const load = () => JSON.parse(localStorage.getItem(KEY)||'[]');
-const save = v => localStorage.setItem(KEY, JSON.stringify(v));
 
-function getInitial(name) { return name ? name.charAt(0) : '?'; }
+// ── トップバーにユーザー情報表示 ──
+(function() {
+  window.addEventListener('DOMContentLoaded', function() {
+    var area = document.getElementById('topbar-user-area');
+    if (!area || !window.IMS_SESSION) return;
+
+    var nameSpan = document.createElement('span');
+    nameSpan.style.cssText = 'font-size:12px;color:#6b7280;';
+    var bold = document.createElement('span');
+    bold.style.cssText = 'font-weight:600;color:#1e2436;';
+    bold.textContent = window.IMS_SESSION.empName || window.IMS_SESSION.empCode;
+    var codeSpan = document.createElement('span');
+    codeSpan.style.cssText = 'margin-left:6px;font-family:DM Mono,monospace;font-size:11px;color:#aaa;';
+    codeSpan.textContent = '(' + window.IMS_SESSION.empCode + ')';
+    nameSpan.appendChild(bold);
+    nameSpan.appendChild(codeSpan);
+
+    var logoutBtn = document.createElement('button');
+    logoutBtn.textContent = 'ログアウト';
+    logoutBtn.style.cssText = 'height:30px;padding:0 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;font-size:11px;font-weight:500;color:#6b7280;cursor:pointer;font-family:inherit;';
+    logoutBtn.addEventListener('click', imsLogout);
+
+    area.appendChild(nameSpan);
+    area.appendChild(logoutBtn);
+  });
+})();
+
+// ── データ操作 ──
+var KEY_EMP      = 'ims_employees';
+var KEY_ACCOUNTS = 'ims_accounts';
+
+function loadEmps() {
+  return JSON.parse(localStorage.getItem(KEY_EMP) || '[]');
+}
+function saveEmps(data) {
+  localStorage.setItem(KEY_EMP, JSON.stringify(data));
+}
+
+function getInitial(name) {
+  return name ? name.charAt(0) : '?';
+}
 
 function renderTable(data) {
-  const tbody = document.getElementById('result-body');
-  document.getElementById('result-count').textContent = data.length ? `${data.length} 名` : '';
-  if (!data.length) { tbody.innerHTML = '<tr><td colspan="2" class="empty-state">該当する担当者がいません</td></tr>'; return; }
-  tbody.innerHTML = data.map(e => `<tr>
-    <td><div class="name-cell"><div class="avatar">${getInitial(e.name)}</div>${e.name}</div></td>
-    <td class="code-cell">${e.code}</td>
-  </tr>`).join('');
+  var tbody = document.getElementById('result-body');
+  var countEl = document.getElementById('result-count');
+  countEl.textContent = data.length ? data.length + ' 名' : '';
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="2" class="empty-state">該当する担当者がいません</td></tr>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < data.length; i++) {
+    var e = data[i];
+    html += '<tr>';
+    html += '<td><div class="name-cell"><div class="avatar">' + getInitial(e.name) + '</div>' + e.name + '</div></td>';
+    html += '<td class="code-cell">' + e.code + '</td>';
+    html += '</tr>';
+  }
+  tbody.innerHTML = html;
 }
 
 function doSearch() {
-  const name = document.getElementById('s-name').value.trim();
-  const code = document.getElementById('s-code').value.trim();
-  if (!name && !code) { renderTable(load()); return; }
-  let data = load();
-  if (name) data = data.filter(e => e.name.includes(name));
-  if (code) data = data.filter(e => e.code.includes(code));
+  var name = document.getElementById('s-name').value.trim();
+  var code = document.getElementById('s-code').value.trim();
+  var data = loadEmps();
+  if (name) data = data.filter(function(e) { return e.name.indexOf(name) !== -1; });
+  if (code) data = data.filter(function(e) { return e.code.indexOf(code) !== -1; });
   renderTable(data);
 }
 
 function addEmployee() {
-  const name = document.getElementById('s-name').value.trim();
-  const code = document.getElementById('s-code').value.trim();
-  if (!name || !code) { alert('担当者名と担当者コードの両方を入力してください。'); return; }
-  const emps = load();
-  if (emps.find(e => e.code === code)) { alert('そのコードは既に登録されています。'); return; }
+  var name = document.getElementById('s-name').value.trim();
+  var code = document.getElementById('s-code').value.trim();
+  if (!name || !code) {
+    alert('担当者名と担当者コードの両方を入力してください。');
+    return;
+  }
+  var emps = loadEmps();
+  if (emps.filter(function(e) { return e.code === code; }).length > 0) {
+    alert('そのコードは既に登録されています。');
+    return;
+  }
+  emps.push({ name: name, code: code });
+  saveEmps(emps);
 
-  // 担当者データに追加
-  emps.push({ name, code });
-  save(emps);
-
-  // アカウント（ログイン情報）を自動生成
-  // パスワードは "password-担当者コード" 形式
-  const accounts = JSON.parse(localStorage.getItem('ims_accounts') || '[]');
-  if (!accounts.find(a => a.code === code)) {
-    accounts.push({ code, password: 'password-' + code });
-    localStorage.setItem('ims_accounts', JSON.stringify(accounts));
+  var accounts = JSON.parse(localStorage.getItem(KEY_ACCOUNTS) || '[]');
+  if (accounts.filter(function(a) { return a.code === code; }).length === 0) {
+    accounts.push({ code: code, password: 'password-' + code });
+    localStorage.setItem(KEY_ACCOUNTS, JSON.stringify(accounts));
   }
 
   document.getElementById('s-name').value = '';
   document.getElementById('s-code').value = '';
-  alert('担当者「' + name + '」を登録しました。
-アカウントが自動作成されました。');
-  renderTable(load());
+  alert('担当者「' + name + '」を登録しました。');
+  renderTable(loadEmps());
 }
 
-document.addEventListener("DOMContentLoaded", function() { renderTable(load()); });
+// ── イベント登録 ──
+window.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('btn-search').addEventListener('click', doSearch);
+  document.getElementById('btn-add').addEventListener('click', addEmployee);
+  renderTable(loadEmps());
+});
 </script>
-
-<nav class="bottom-nav">
-  <a class="bottom-nav-item" href="registration.html">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-    登録
-    <span class="nav-dot"></span>
-  </a>
-  <a class="bottom-nav-item" href="inventory.html">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H5a2 2 0 00-2 2v0a2 2 0 002 2h14a2 2 0 002-2v0a2 2 0 00-2-2h-4M9 17V9m0 8h6V9m0 8V9M9 9h6"/></svg>
-    在庫
-    <span class="nav-dot"></span>
-  </a>
-  <a class="bottom-nav-item" href="product.html">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-    商品
-    <span class="nav-dot"></span>
-  </a>
-  <a class="bottom-nav-item active" href="site.html">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-    事業所
-    <span class="nav-dot"></span>
-  </a>
-</nav>
 </body>
 </html>
