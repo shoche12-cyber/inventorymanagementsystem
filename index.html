@@ -293,7 +293,7 @@
 </div>
 
 <script>
-const KEYS = { emp: 'ims_employees', accounts: 'ims_accounts', token: 'ims_token', redirect: 'ims_redirect' };
+const KEYS = { emp: 'ims_employees', accounts: 'ims_accounts', session: 'ims_session', redirect: 'ims_redirect' };
 const load = k => JSON.parse(localStorage.getItem(k) || '[]');
 
 // 毎回ログイン方式 - ログイン済みチェックなし
@@ -375,9 +375,9 @@ function doLogin() {
       return;
     }
 
-    // ログイン成功 → 消費型トークンを localStorage に保存
-    const token = { empCode: emp.code, empName: emp.name, loginAt: Date.now() };
-    localStorage.setItem(KEYS.token, JSON.stringify(token));
+    // ログイン成功 → sessionStorage にセッション保存（ブラウザを閉じると消える）
+    const sess = { empCode: emp.code, empName: emp.name, loginAt: Date.now() };
+    sessionStorage.setItem(KEYS.session, JSON.stringify(sess));
 
     const dest = localStorage.getItem(KEYS.redirect) || 'top.html';
     localStorage.removeItem(KEYS.redirect);
