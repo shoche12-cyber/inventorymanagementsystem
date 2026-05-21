@@ -385,12 +385,13 @@
               <th>商品画像</th>
               <th>分類</th>
               <th>日付</th>
+              <th>担当者</th>
               <th>操作</th>
               <th>数量</th>
             </tr>
           </thead>
           <tbody id="result-body">
-            <tr><td colspan="9" class="empty-state">検索条件を入力して「検索」をクリックしてください</td></tr>
+            <tr><td colspan="10" class="empty-state">検索条件を入力して「検索」をクリックしてください</td></tr>
           </tbody>
         </table>
       </div>
@@ -615,7 +616,7 @@ function renderTable(data) {
   const tbody = document.getElementById('result-body');
   document.getElementById('result-count').textContent = data.length ? `${data.length} 件` : '';
   if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">該当するデータがありません</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">該当するデータがありません</td></tr>';
     return;
   }
   tbody.innerHTML = data.map(r => {
@@ -632,6 +633,7 @@ function renderTable(data) {
       <td>${imgHtml}</td>
       <td>${cls}</td>
       <td>${r.date}</td>
+      <td>${r.empName || '—'}</td>
       <td>${OP_MAP[r.opCode] || r.opCode}</td>
       <td style="font-family:'DM Mono',monospace;">${r.qty}</td>
     </tr>`;
