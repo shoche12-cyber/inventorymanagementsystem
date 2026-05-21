@@ -321,19 +321,32 @@
     var topbar = document.querySelector('.topbar');
     if (!topbar || !window.IMS_SESSION) return;
     if (topbar.querySelector('.topbar-user')) return;
-    var div = document.createElement('div');
-    div.className = 'topbar-user';
-    div.style.cssText = 'display:flex;align-items:center;gap:10px;margin-left:auto;';
-    div.innerHTML =
-      '<span style="font-size:12px;color:var(--text-secondary);">' +
-        '<span style="font-weight:600;color:var(--text-primary);">' + (window.IMS_SESSION.empName || window.IMS_SESSION.empCode) + '</span>' +
-        '<span style="margin-left:6px;font-family:DM Mono,monospace;font-size:11px;color:#aaa;">(' + window.IMS_SESSION.empCode + ')</span>' +
-      '</span>' +
-      '<button onclick="imsLogout()" style="height:30px;padding:0 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;font-size:11px;font-weight:500;color:#6b7280;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';" onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#6b7280';">' +
-        '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
-        'ログアウト' +
-      '</button>';
-    topbar.appendChild(div);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'topbar-user';
+    wrap.style.cssText = 'display:flex;align-items:center;gap:10px;margin-left:auto;';
+
+    var nameSpan = document.createElement('span');
+    nameSpan.style.cssText = 'font-size:12px;color:var(--text-secondary);';
+    var bold = document.createElement('span');
+    bold.style.cssText = 'font-weight:600;color:var(--text-primary);';
+    bold.textContent = window.IMS_SESSION.empName || window.IMS_SESSION.empCode;
+    var code = document.createElement('span');
+    code.style.cssText = 'margin-left:6px;font-family:DM Mono,monospace;font-size:11px;color:#aaa;';
+    code.textContent = '(' + window.IMS_SESSION.empCode + ')';
+    nameSpan.appendChild(bold);
+    nameSpan.appendChild(code);
+
+    var btn = document.createElement('button');
+    btn.textContent = 'ログアウト';
+    btn.style.cssText = 'height:30px;padding:0 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;font-size:11px;font-weight:500;color:#6b7280;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px;transition:all .15s;';
+    btn.addEventListener('mouseover', function() { this.style.borderColor='#ef4444'; this.style.color='#ef4444'; });
+    btn.addEventListener('mouseout',  function() { this.style.borderColor='#e5e7eb'; this.style.color='#6b7280'; });
+    btn.addEventListener('click', imsLogout);
+
+    wrap.appendChild(nameSpan);
+    wrap.appendChild(btn);
+    topbar.appendChild(wrap);
   }
   document.addEventListener('DOMContentLoaded', injectUserInfo);
 })();
