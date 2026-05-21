@@ -379,7 +379,7 @@ function doLogin() {
     const sess = { empCode: emp.code, empName: emp.name, loginAt: Date.now() };
     sessionStorage.setItem(KEYS.session, JSON.stringify(sess));
 
-    const dest = localStorage.getItem(KEYS.redirect) || 'top.html';
+    const dest = localStorage.getItem(KEYS.redirect) || 'inventory.html';
     localStorage.removeItem(KEYS.redirect);
     location.replace(dest);
   }, 400);
