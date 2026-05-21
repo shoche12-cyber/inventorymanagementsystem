@@ -443,8 +443,10 @@ function addProduct() {
 }
 
 // 初期化
-loadClsOptions();
-renderTable(load(KEYS.prod));
+document.addEventListener("DOMContentLoaded", function() {
+  loadClsOptions();
+  renderTable(load(KEYS.prod));
+});
 </script>
 
 <nav class="bottom-nav">
