@@ -276,18 +276,6 @@
         <div class="s-label">検索結果</div>
         <div class="s-value" id="sum-count">0</div>
       </div>
-      <div class="summary-chip">
-        <div class="s-label">総在庫数</div>
-        <div class="s-value" id="sum-total">0</div>
-      </div>
-      <div class="summary-chip">
-        <div class="s-label">在庫あり</div>
-        <div class="s-value" id="sum-instock" style="color:#16a34a;">0</div>
-      </div>
-      <div class="summary-chip">
-        <div class="s-label">在庫なし</div>
-        <div class="s-value" id="sum-zero" style="color:#dc2626;">0</div>
-      </div>
     </div>
 
     <div class="card">
@@ -483,9 +471,6 @@ function updateSummary(rows) {
   const strip = document.getElementById('summary-strip');
   strip.style.display = rows.length ? 'flex' : 'none';
   document.getElementById('sum-count').textContent   = rows.length;
-  document.getElementById('sum-total').textContent   = rows.reduce((a, r) => a + Math.max(r.qty, 0), 0);
-  document.getElementById('sum-instock').textContent = rows.filter(r => r.qty > 0).length;
-  document.getElementById('sum-zero').textContent    = rows.filter(r => r.qty <= 0).length;
 }
 
 function resetSearch() {
